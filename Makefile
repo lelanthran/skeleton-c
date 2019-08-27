@@ -294,6 +294,7 @@ all:	real-all
 	cp $(OUTLIB)/* $(OUTDIR)/lib
 
 real-show:	$(OUTDIRS)
+	@echo "HOME:         $(HOME)"
 	@echo "SHELL:        $(SHELL)"
 	@echo "EXE_EXT:      $(EXE_EXT)"
 	@echo "LIB_EXT:      $(LIB_EXT)"

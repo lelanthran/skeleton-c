@@ -53,7 +53,7 @@ INCLUDE_PATHS=\
 
 # ######################################################################
 # This is similar to the INCLUDE_PATHS you set above, except that it is
-# for the library search paths. $(HOME) is available if you have include
+# for the library search paths. $(HOME) is available if you have library
 # directories relative to your home directory. $(HOME) works correctly
 # on Windows as well.
 #
@@ -294,7 +294,7 @@ all:	real-all
 	cp $(OUTLIB)/* $(OUTDIR)/lib
 
 real-show:	$(OUTDIRS)
-	@echo "SHELL:        $(GITSHELL)"
+	@echo "SHELL:        $(SHELL)"
 	@echo "EXE_EXT:      $(EXE_EXT)"
 	@echo "LIB_EXT:      $(LIB_EXT)"
 	@echo "DYNLIB:       $(DYNLIB)"

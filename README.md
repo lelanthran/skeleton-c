@@ -39,4 +39,12 @@ There are two example modules: `module_one` and `module_two`. See the
 `src/` directory for the sources and headers for these modules.
 
 ## Setting the project name and version
-
+At the very top of the Makefile are two variables; one is for the project
+name and the other is for the version. Set these two variables to the name
+of your project and the version.
+```Make
+PROJNAME=skeleton
+VERSION=3.14.59
+```
+Replace the string `skeleton` with the name of your project. Replace the
+string `3.14.59` with the version of your project.

@@ -14,6 +14,12 @@ The module and headers are present only as an example. You must replace
 them (or remove them) with your own modules.
 
 ## Output files
+You should do a build immediately after cloning this repo, just to make
+sure everything compiles as it is. To build you must do either `make
+debug` or `make release`. The build will display all of the build
+variables before a build is started. Doing a plain `make` will display a
+list of targets that the user can build.
+
 After building the project you will have either a `debug/` directory or a
 `release` directory depending on whether you did `make debug` or `make
 clean`. I'll assume you did `make debug` from this point; all the

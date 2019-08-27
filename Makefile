@@ -3,6 +3,129 @@
 PROJNAME=skeleton
 VERSION=3.14.59
 
+# ######################################################################
+# Set the main (executable) source files. These are all the source files
+# that have a 'main' function. Note that you must specify the filename
+# without the extension, so don't specify 'myfile.cpp', just specify
+# 'myfile'.
+MAIN_PROGRAM_SOURCEFILES=\
+	example1_cli\
+	example2_cli
+
+# ######################################################################
+# Set each of the source files that must be built. These are all those
+# source files (both .c and .cpp) that *DON'T* have a main function. All
+# of these files will be compiled into a single library (sorry, I do not
+# have plans to allow multiple library files to be built).
+#
+# Note once again that you must not specify the file extension.
+# Unfortunately you are not allowed to have two object files that have the
+# same name save for the extension. For example, you cannot have 'myfile.c'
+# and 'myfile.cpp' in the same project, although it is allowed
+# (encouraged even) to have either 'myfile.c' or 'myfile.cpp' together
+# with 'myfile.h'.
+#
+LIBRARY_OBJECT_SOURCEFILES=\
+	module_one\
+	module_two
+
+
+# ######################################################################
+# For now we set the headers manually. In the future I plan to use gcc to
+# generate the dependencies that can be included in this file. Simply name
+# all the header files you wrote for this project. Note that unlike the
+# previous settings, for this setting you must specify the path to the
+# headers (relative to this directory).
+HEADERS=\
+	src/module_one.h\
+	src/module_two.h
+
+
+# ######################################################################
+# Here you must set the list of include paths. Note that the variable
+# $(HOME) is available if you have include directories relative to your
+# home directory. $(HOME) works correctly on Windows as well.
+#
+# You can put as many paths in here as you want to. I've put one in as an
+# example.
+INCLUDE_PATHS=\
+	$(HOME)/include
+
+# ######################################################################
+# This is similar to the INCLUDE_PATHS you set above, except that it is
+# for the library search paths. $(HOME) is available if you have include
+# directories relative to your home directory. $(HOME) works correctly
+# on Windows as well.
+#
+# You can put as many paths in here as you want to. I've put one in as an
+# example. See the variable LIBRARY_FILES to set the actual libraries you
+# want to link in.
+LIBRARY_PATHS=\
+	$(HOME)/lib
+
+
+# ######################################################################
+# This is for specifying extra libraries. Note that you must only specify
+# the library name, and neither the extension nor the prefix 'lib'.
+#
+# These files *MUST* be in the library search path specified with
+# LIBRARY_PATHS.
+#
+# I've put in an example here that is commented out, so that you can see
+# how the files are supposed to be specified but, because it is commented
+# out, it will not break the build process if this library is not
+# installed.
+#
+# (If it is not commented out, go ahead and comment it out when the build
+# fails)
+LIBRARY_FILES=\
+	ds
+
+
+# ######################################################################
+# Here you set extra compiler flags that are common to both the C++ and
+# the C compiler. You can comment this line out with no ill-effects.
+#
+# Note that this does not override the existing flags, it only adds to
+# them
+EXTRA_COMPILER_FLAGS=\
+	-DNAME=Value\
+	-W -Wall
+
+
+# ######################################################################
+# Here you set extra compiler flags for the C compiler only. You can comment
+# this line out with no ill-effects.
+#
+# Note that this does not override the existing flags, it only adds to
+# them
+EXTRA_CFLAGS=\
+	-std=c99
+
+
+# ######################################################################
+# Here you set extra compiler flags for the C++ compiler only. You can
+# comment this line out with no ill-effects.
+#
+# Note that this does not override the existing flags, it only adds to
+# them
+EXTRA_CXXFLAGS=\
+	-std=c++x11
+
+
+
+# ######################################################################
+# The default compilers are gcc and g++. If you want to specify something
+# different, this is the place to do it. This is useful if you want to
+# cross-compile, or use a different gcc/g++ than the one in your path, or
+# simply want to use clang instead.
+#
+# Note that only clang and gcc are supported (due to reliance on the
+# compiler command-line options).
+#
+# You can comment this out with no ill-effects.
+GCC=gcc
+GXX=g++
 
 # ######################################################################
 # Some housekeeping to determine if we are running on a POSIX
@@ -20,22 +143,24 @@ ifneq ($(MAKEPROGRAM_EXE),)
 ifeq ($(strip $(GITSHELL)),)
 $(error On windows this must be executed from the Git bash shell)
 endif
+	HOME=$(HOMEDRIVE)/$(HOMEPATH)
 	PLATFORM=Windows
 	EXE_EXT=.exe
 	LIB_EXT=.dll
 	PLATFORM_LDFLAGS=--L$(HOME)/lib lmingw32 -lws2_32 -lmsvcrt -lgcc
-	PLATFORM_CFLAGS=-I$(HOME)/include -D__USE_MINGW_ANSI_STDIO
+	PLATFORM_CFLAGS= -D__USE_MINGW_ANSI_STDIO
 endif
 
 ifneq ($(MAKEPROGRAM_MINGW),)
 ifeq ($(strip $(GITSHELL)),)
 $(error On windows this must be executed from the Git bash shell)
 endif
+	HOME=$(HOMEDRIVE)/$(HOMEPATH)
 	PLATFORM=Windows
 	EXE_EXT=.exe
 	LIB_EXT=.dll
 	PLATFORM_LDFLAGS=-L$(HOME)/lib -lmingw32 -lws2_32 -lmsvcrt -lgcc
-	PLATFORM_CFLAGS=-I$(HOME)/include -D__USE_MINGW_ANSI_STDIO
+	PLATFORM_CFLAGS= -D__USE_MINGW_ANSI_STDIO
 endif
 
 # If neither of the above are true then we assume a working POSIX
@@ -72,8 +197,7 @@ OUTDIRS=$(OUTLIB) $(OUTBIN) $(OUTOBS)
 # ######################################################################
 # Declare the final outputs
 BINPROGS=\
-	$(OUTBIN)/example1_cli$(EXE_EXT)\
-	$(OUTBIN)/example2_cli$(EXE_EXT)
+	$(foreach fname,$(MAIN_PROGRAM_SOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))
 
 DYNLIB=$(OUTLIB)/lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
 STCLIB=$(OUTLIB)/lib$(PROJNAME)-$(VERSION).a
@@ -86,18 +210,10 @@ STCLNK_NAME=$(OUTLIB)/lib$(PROJNAME).a
 # ######################################################################
 # Declare the intermediate outputs
 BINOBS=\
-	$(OUTOBS)/example1_cli.o\
-	$(OUTOBS)/example2_cli.o
-
+	$(foreach fname,$(MAIN_PROGRAM_SOURCEFILES),$(OUTOBS)/$(fname).o)
 
 OBS=\
-	$(OUTOBS)/module_one.o\
-	$(OUTOBS)/module_two.o
-
-
-HEADERS=\
-	src/module_one.h\
-	src/module_two.h
+	$(foreach fname,$(LIBRARY_OBJECT_SOURCEFILES),$(OUTOBS)/$(fname).o)
 
 
 # ######################################################################
@@ -109,19 +225,31 @@ ifndef GXX
 	GXX=g++
 endif
 
+# ######################################################################
+# Declare all the flags we need to compile and link
 CC=$(GCC)
 CXX=$(GXX)
 
+INCLUDE_DIRS=\
+	$(foreach ipath,$(INCLUDE_PATHS),-I$(ipath))
+
+LIBDIRS=\
+	$(foreach lpath,$(LIBRARY_PATHS),-L$(lpath))
+
+LIBFILES=\
+	$(foreach lfile,$(LIBRARY_FILES),-l$(lfile))
+
 COMMONFLAGS=\
+	$(EXTRA_COMPILER_FLAGS)\
 	-W -Wall -c -fPIC \
 	-DPLATFORM=$(PLATFORM) -DPLATFORM_$(PLATFORM) \
-	-DSQLDB_VERSION='"$(VERSION)"'\
+	-D$(PROJNAME)_version='"$(VERSION)"'\
 	$(PLATFORM_CFLAGS)
 
-CFLAGS=$(COMMONFLAGS)
-CXXFLAGS=$(COMMONFLAGS) -std=c++x11
+CFLAGS=$(COMMONFLAGS) $(EXTRA_CFLAGS)
+CXXFLAGS=$(COMMONFLAGS) $(EXTRA_CXXFLAGS)
 LD=$(GCC)
-LDFLAGS= -lpq -lm $(PLATFORM_LDFLAGS)
+LDFLAGS= $(LIBDIRS) $(LIBFILES) -lm $(PLATFORM_LDFLAGS)
 AR=ar
 ARFLAGS= rcs
 

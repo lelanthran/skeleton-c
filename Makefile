@@ -280,8 +280,8 @@ real-help:
 	@echo "                     'show release' works."
 	@echo "debug:               Build debug binaries."
 	@echo "release:             Build release binaries."
-	@echo "clean-debug:         Clean a debug build (debug is ignored)."
-	@echo "clean-release:       Clean a release build (release is ignored)."
+	@echo "clean-debug:         Clean a debug build (release is ignored)."
+	@echo "clean-release:       Clean a release build (debug is ignored)."
 	@echo "clean-all:           Clean everything."
 
 real-all:	real-show  $(DYNLIB) $(STCLIB) $(BINPROGS)

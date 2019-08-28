@@ -218,6 +218,7 @@ ifeq ($(PLATFORM),)
 	LIB_EXT:=.so
 	PLATFORM_LDFLAGS:= -lpthread -ldl
 	ECHO:=echo
+	REAL_SHOW:=real-show
 endif
 
 
@@ -353,14 +354,14 @@ real-help:
 # Grab the dependencies.
 -include Make.deps
 
-real-all:	real-show $(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
+real-all:	$(REAL_SHOW) $(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
 
 all:	real-all
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> ./include/]"
-	@cp -Rv $(HEADERS) include
-	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET) -> $(STCLNK_NAME)]"
+	@cp -R $(HEADERS) include
+	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET)]"
 	@ln -f -s $(STCLNK_TARGET) $(STCLNK_NAME)
-	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(DYNLNK_TARGET) -> $(DYNLNK_NAME)]"
+	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(DYNLNK_TARGET)]"
 	@ln -f -s $(DYNLNK_TARGET) $(DYNLNK_NAME)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> $(OUTDIR)/lib]"
 	@cp $(OUTLIB)/* $(OUTDIR)/lib
@@ -461,14 +462,14 @@ $(OUTDIRS):
 		($(ECHO) "$(INV)$(RED)[mkdir failure]   [$@]$(NONE)" ; exit 127)
 
 clean-release:
-	rm -rfv release Make.deps
+	@rm -rfv release Make.deps
 
 clean-debug:
-	rm -rfv debug Make.deps
+	@rm -rfv debug Make.deps
 
 clean-all:	clean-release clean-debug
-	rm -rfv include
+	@rm -rfv include
 
 clean:
-	$(ECHO) Choose either clean-release or clean-debug
+	@$(ECHO) Choose either clean-release or clean-debug
 

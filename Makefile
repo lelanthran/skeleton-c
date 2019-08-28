@@ -6,10 +6,21 @@ VERSION=3.14.59
 # ######################################################################
 # Set the main (executable) source files. These are all the source files
 # that have a 'main' function. Note that you must specify the filename
-# without the extension, so don't specify 'myfile.cpp', just specify
+# without the extension, so don't specify 'myfile.c', just specify
 # 'myfile'.
-MAIN_PROGRAM_SOURCEFILES=\
-	example1_cli\
+#
+# Note that this list is only for C files.
+MAIN_PROGRAM_CSOURCEFILES=\
+	example1_cli
+
+# ######################################################################
+# Set the main (executable) source files. These are all the source files
+# that have a 'main' function. Note that you must specify the filename
+# without the extension, so don't specify 'myfile.c', just specify
+# 'myfile'.
+#
+# Note that this list is only for C++ files.
+MAIN_PROGRAM_CPPSOURCEFILES=\
 	example2_cli
 
 # ######################################################################
@@ -25,8 +36,25 @@ MAIN_PROGRAM_SOURCEFILES=\
 # (encouraged even) to have either 'myfile.c' or 'myfile.cpp' together
 # with 'myfile.h'.
 #
-LIBRARY_OBJECT_SOURCEFILES=\
-	module_one\
+# Note that this list is only for C files.
+LIBRARY_OBJECT_CSOURCEFILES=\
+	module_one
+
+# ######################################################################
+# Set each of the source files that must be built. These are all those
+# source files (both .c and .cpp) that *DON'T* have a main function. All
+# of these files will be compiled into a single library (sorry, I do not
+# have plans to allow multiple library files to be built).
+#
+# Note once again that you must not specify the file extension.
+# Unfortunately you are not allowed to have two object files that have the
+# same name save for the extension. For example, you cannot have 'myfile.c'
+# and 'myfile.cpp' in the same project, although it is allowed
+# (encouraged even) to have either 'myfile.c' or 'myfile.cpp' together
+# with 'myfile.h'.
+#
+# Note that this list is only for C++ files.
+LIBRARY_OBJECT_CPPSOURCEFILES=\
 	module_two
 
 
@@ -110,7 +138,7 @@ EXTRA_CFLAGS=\
 # Note that this does not override the existing flags, it only adds to
 # them
 EXTRA_CXXFLAGS=\
-	-std=c++x11
+	-std=c++11
 
 
 
@@ -126,6 +154,9 @@ EXTRA_CXXFLAGS=\
 # You can comment this out with no ill-effects.
 GCC=gcc
 GXX=g++
+
+
+
 
 # ######################################################################
 # Some housekeeping to determine if we are running on a POSIX
@@ -197,7 +228,8 @@ OUTDIRS=$(OUTLIB) $(OUTBIN) $(OUTOBS)
 # ######################################################################
 # Declare the final outputs
 BINPROGS=\
-	$(foreach fname,$(MAIN_PROGRAM_SOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))
+	$(foreach fname,$(MAIN_PROGRAM_CSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))\
+	$(foreach fname,$(MAIN_PROGRAM_CPPSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))
 
 DYNLIB=$(OUTLIB)/lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
 STCLIB=$(OUTLIB)/lib$(PROJNAME)-$(VERSION).a
@@ -209,12 +241,26 @@ STCLNK_NAME=$(OUTLIB)/lib$(PROJNAME).a
 
 # ######################################################################
 # Declare the intermediate outputs
-BINOBS=\
-	$(foreach fname,$(MAIN_PROGRAM_SOURCEFILES),$(OUTOBS)/$(fname).o)
+BIN_COBS=\
+	$(foreach fname,$(MAIN_PROGRAM_CSOURCEFILES),$(OUTOBS)/$(fname).o)
 
-OBS=\
-	$(foreach fname,$(LIBRARY_OBJECT_SOURCEFILES),$(OUTOBS)/$(fname).o)
+BIN_CPPOBS=\
+	$(foreach fname,$(MAIN_PROGRAM_CPPSOURCEFILES),$(OUTOBS)/$(fname).o)
 
+BINOBS=$(BIN_COBS) $(BIN_CPPOBS)
+
+COBS=\
+	$(foreach fname,$(LIBRARY_OBJECT_CSOURCEFILES),$(OUTOBS)/$(fname).o)
+
+CPPOBS=\
+	$(foreach fname,$(LIBRARY_OBJECT_CPPSOURCEFILES),$(OUTOBS)/$(fname).o)
+
+OBS=$(COBS) $(CPPOBS)
+
+# ######################################################################
+# Find all the source files so that we can do dependencies properly
+SOURCES=\
+	$(shell find . | grep -E "\.(c|cpp)\$$")
 
 # ######################################################################
 # Declare the build programs
@@ -284,7 +330,12 @@ real-help:
 	@echo "clean-release:       Clean a release build (debug is ignored)."
 	@echo "clean-all:           Clean everything."
 
-real-all:	real-show  $(DYNLIB) $(STCLIB) $(BINPROGS)
+
+# ######################################################################
+# Grab the dependencies.
+include Make.deps
+
+real-all:	real-show $(DYNLIB) $(STCLIB) $(BINPROGS)
 
 all:	real-all
 	mkdir -p include
@@ -318,20 +369,41 @@ real-show:	$(OUTDIRS)
 	@for X in $(OUTDIRS); do echo "              $$X"; done
 	@echo "HEADERS:      "
 	@for X in $(HEADERS); do echo "              $$X"; done
+	@echo "COBS:          "
+	@for X in $(COBS); do echo "              $$X"; done
+	@echo "CPPOBS:          "
+	@for X in $(CPPOBS); do echo "              $$X"; done
 	@echo "OBS:          "
 	@for X in $(OBS); do echo "              $$X"; done
+	@echo "BIN_COBS:       "
+	@for X in $(BIN_COBS); do echo "              $$X"; done
+	@echo "BIN_CPPOBS:       "
+	@for X in $(BIN_CPPOBS); do echo "              $$X"; done
 	@echo "BINOBS:       "
 	@for X in $(BINOBS); do echo "              $$X"; done
 	@echo "BINPROGS:     "
 	@for X in $(BINPROGS); do echo "              $$X"; done
+	@echo "SOURCES:     "
+	@for X in $(SOURCES); do echo "              $$X"; done
 	@echo "PWD:          $(PWD)"
 
 show:	real-show
 	@echo "Only target 'show' selected, ending now."
 	@false
 
-$(BINOBS) $(OBS):	$(OUTOBS)/%.o:	src/%.c $(HEADERS)
+$(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c
 	$(CC) $(CFLAGS) -o $@ $<
+
+$(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp
+	$(CXX) $(CXXFLAGS) -o $@ $<
+
+deps:	Make.deps
+
+Make.deps:	$(HEADERS)
+	for X in $(SOURCES); do\
+		export DEP="`$(CC) $(INCLUDE_DIRS) -MM $$X`";\
+		echo $(OUTOBS)/$$DEP;\
+	done > Make.deps
 
 
 $(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)

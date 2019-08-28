@@ -157,7 +157,7 @@ GXX=g++
 
 
 # ######################################################################
-# Set some colours for echo to use
+# Set some colours for $(ECHO) to use
 NONE:=\e[0m
 INV:=\e[7m
 RED:=\e[31m
@@ -188,33 +188,36 @@ ifneq ($(MAKEPROGRAM_EXE),)
 ifeq ($(strip $(GITSHELL)),)
 $(error On windows this must be executed from the Git bash shell)
 endif
-	HOME=$(HOMEDRIVE)$(HOMEPATH)
-	PLATFORM=Windows
-	EXE_EXT=.exe
-	LIB_EXT=.dll
-	PLATFORM_LDFLAGS=--L$(HOME)/lib lmingw32 -lws2_32 -lmsvcrt -lgcc
-	PLATFORM_CFLAGS= -D__USE_MINGW_ANSI_STDIO
+	HOME:=$(HOMEDRIVE)$(HOMEPATH)
+	PLATFORM:=Windows
+	EXE_EXT:=.exe
+	LIB_EXT:=.dll
+	PLATFORM_LDFLAGS:=--L$(HOME)/lib lmingw32 -lws2_32 -lmsvcrt -lgcc
+	PLATFORM_CFLAGS:= -D__USE_MINGW_ANSI_STDIO
+	ECHO:=echo -e
 endif
 
 ifneq ($(MAKEPROGRAM_MINGW),)
 ifeq ($(strip $(GITSHELL)),)
 $(error On windows this must be executed from the Git bash shell)
 endif
-	HOME=$(HOMEDRIVE)$(HOMEPATH)
-	PLATFORM=Windows
-	EXE_EXT=.exe
-	LIB_EXT=.dll
-	PLATFORM_LDFLAGS=-L$(HOME)/lib -lmingw32 -lws2_32 -lmsvcrt -lgcc
-	PLATFORM_CFLAGS= -D__USE_MINGW_ANSI_STDIO
+	HOME:=$(HOMEDRIVE)$(HOMEPATH)
+	PLATFORM:=Windows
+	EXE_EXT:=.exe
+	LIB_EXT:=.dll
+	PLATFORM_LDFLAGS:=-L$(HOME)/lib -lmingw32 -lws2_32 -lmsvcrt -lgcc
+	PLATFORM_CFLAGS:= -D__USE_MINGW_ANSI_STDIO
+	ECHO:=echo -e
 endif
 
 # If neither of the above are true then we assume a working POSIX
 # platform
 ifeq ($(PLATFORM),)
-	PLATFORM=POSIX
-	EXE_EXT=.elf
-	LIB_EXT=.so
-	PLATFORM_LDFLAGS= -lpthread -ldl
+	PLATFORM:=POSIX
+	EXE_EXT:=.elf
+	LIB_EXT:=.so
+	PLATFORM_LDFLAGS:= -lpthread -ldl
+	ECHO:=echo
 endif
 
 
@@ -232,48 +235,48 @@ ifneq (,$(findstring release,$(MAKECMDGOALS)))
 OUTDIR=release
 endif
 
-TARGET=$(shell $(GCC) -dumpmachine)
-OUTLIB=$(OUTDIR)/lib/$(TARGET)
-OUTBIN=$(OUTDIR)/bin/$(TARGET)
-OUTOBS=$(OUTDIR)/obs/$(TARGET)
-OUTDIRS=$(OUTLIB) $(OUTBIN) $(OUTOBS) include
+TARGET:=$(shell $(GCC) -dumpmachine)
+OUTLIB:=$(OUTDIR)/lib/$(TARGET)
+OUTBIN:=$(OUTDIR)/bin/$(TARGET)
+OUTOBS:=$(OUTDIR)/obs/$(TARGET)
+OUTDIRS:=$(OUTLIB) $(OUTBIN) $(OUTOBS) include
 
 
 # ######################################################################
 # Declare the final outputs
-BINPROGS=\
+BINPROGS:=\
 	$(foreach fname,$(MAIN_PROGRAM_CSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))\
 	$(foreach fname,$(MAIN_PROGRAM_CPPSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))
 
-DYNLIB=$(OUTLIB)/lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
-STCLIB=$(OUTLIB)/lib$(PROJNAME)-$(VERSION).a
-DYNLNK_TARGET=lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
-STCLNK_TARGET=lib$(PROJNAME)-$(VERSION).a
-DYNLNK_NAME=$(OUTLIB)/lib$(PROJNAME)$(LIB_EXT)
-STCLNK_NAME=$(OUTLIB)/lib$(PROJNAME).a
+DYNLIB:=$(OUTLIB)/lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
+STCLIB:=$(OUTLIB)/lib$(PROJNAME)-$(VERSION).a
+DYNLNK_TARGET:=lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
+STCLNK_TARGET:=lib$(PROJNAME)-$(VERSION).a
+DYNLNK_NAME:=$(OUTLIB)/lib$(PROJNAME)$(LIB_EXT)
+STCLNK_NAME:=$(OUTLIB)/lib$(PROJNAME).a
 
 
 # ######################################################################
 # Declare the intermediate outputs
-BIN_COBS=\
+BIN_COBS:=\
 	$(foreach fname,$(MAIN_PROGRAM_CSOURCEFILES),$(OUTOBS)/$(fname).o)
 
-BIN_CPPOBS=\
+BIN_CPPOBS:=\
 	$(foreach fname,$(MAIN_PROGRAM_CPPSOURCEFILES),$(OUTOBS)/$(fname).o)
 
-BINOBS=$(BIN_COBS) $(BIN_CPPOBS)
+BINOBS:=$(BIN_COBS) $(BIN_CPPOBS)
 
-COBS=\
+COBS:=\
 	$(foreach fname,$(LIBRARY_OBJECT_CSOURCEFILES),$(OUTOBS)/$(fname).o)
 
-CPPOBS=\
+CPPOBS:=\
 	$(foreach fname,$(LIBRARY_OBJECT_CPPSOURCEFILES),$(OUTOBS)/$(fname).o)
 
-OBS=$(COBS) $(CPPOBS)
+OBS:=$(COBS) $(CPPOBS)
 
 # ######################################################################
 # Find all the source files so that we can do dependencies properly
-SOURCES=\
+SOURCES:=\
 	$(shell find . | grep -E "\.(c|cpp)\$$")
 
 # ######################################################################
@@ -290,28 +293,28 @@ endif
 CC=$(GCC)
 CXX=$(GXX)
 
-INCLUDE_DIRS=\
+INCLUDE_DIRS:=\
 	$(foreach ipath,$(INCLUDE_PATHS),-I$(ipath))
 
-LIBDIRS=\
+LIBDIRS:=\
 	$(foreach lpath,$(LIBRARY_PATHS),-L$(lpath))
 
-LIBFILES=\
+LIBFILES:=\
 	$(foreach lfile,$(LIBRARY_FILES),-l$(lfile))
 
-COMMONFLAGS=\
+COMMONFLAGS:=\
 	$(EXTRA_COMPILER_FLAGS)\
 	-W -Wall -c -fPIC \
 	-DPLATFORM=$(PLATFORM) -DPLATFORM_$(PLATFORM) \
 	-D$(PROJNAME)_version='"$(VERSION)"'\
 	$(PLATFORM_CFLAGS)
 
-CFLAGS=$(COMMONFLAGS) $(EXTRA_CFLAGS)
-CXXFLAGS=$(COMMONFLAGS) $(EXTRA_CXXFLAGS)
-LD=$(GCC)
-LDFLAGS= $(LIBDIRS) $(LIBFILES) -lm $(PLATFORM_LDFLAGS)
-AR=ar
-ARFLAGS= rcs
+CFLAGS:=$(COMMONFLAGS) $(EXTRA_CFLAGS)
+CXXFLAGS:=$(COMMONFLAGS) $(EXTRA_CXXFLAGS)
+LD:=$(GCC)
+LDFLAGS:= $(LIBDIRS) $(LIBFILES) -lm $(PLATFORM_LDFLAGS)
+AR:=ar
+ARFLAGS:= rcs
 
 
 .PHONY:	help real-help show real-show debug release clean-all deps
@@ -333,17 +336,17 @@ release:	all
 # Finally, build the system
 
 real-help:
-	@echo "Possible targets:"
-	@echo "help:                This message."
-	@echo "show:                Display all the variable values that will be"
-	@echo "                     used during execution. Also 'show debug' or"
-	@echo "                     'show release' works."
-	@echo "deps:                Make the dependencies only."
-	@echo "debug:               Build debug binaries."
-	@echo "release:             Build release binaries."
-	@echo "clean-debug:         Clean a debug build (release is ignored)."
-	@echo "clean-release:       Clean a release build (debug is ignored)."
-	@echo "clean-all:           Clean everything."
+	@$(ECHO) "Possible targets:"
+	@$(ECHO) "help:                This message."
+	@$(ECHO) "show:                Display all the variable values that will be"
+	@$(ECHO) "                     used during execution. Also 'show debug' or"
+	@$(ECHO) "                     'show release' works."
+	@$(ECHO) "deps:                Make the dependencies only."
+	@$(ECHO) "debug:               Build debug binaries."
+	@$(ECHO) "release:             Build release binaries."
+	@$(ECHO) "clean-debug:         Clean a debug build (release is ignored)."
+	@$(ECHO) "clean-release:       Clean a release build (debug is ignored)."
+	@$(ECHO) "clean-all:           Clean everything."
 
 
 # ######################################################################
@@ -353,109 +356,109 @@ real-help:
 real-all:	real-show $(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
 
 all:	real-all
-	@echo "[$(CYAN)Copying$(NONE)     ]    [ -> ./include/]"
+	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> ./include/]"
 	@cp -Rv $(HEADERS) include
-	@echo "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET) -> $(STCLNK_NAME)]"
+	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET) -> $(STCLNK_NAME)]"
 	@ln -f -s $(STCLNK_TARGET) $(STCLNK_NAME)
-	@echo "[$(CYAN)Soft linking$(NONE)]    [$(DYNLNK_TARGET) -> $(DYNLNK_NAME)]"
+	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(DYNLNK_TARGET) -> $(DYNLNK_NAME)]"
 	@ln -f -s $(DYNLNK_TARGET) $(DYNLNK_NAME)
-	@echo "[$(CYAN)Copying$(NONE)     ]    [ -> $(OUTDIR)/lib]"
+	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> $(OUTDIR)/lib]"
 	@cp $(OUTLIB)/* $(OUTDIR)/lib
-	@echo "$(INV)$(YELLOW)Build completed: `date`$(NONE)"
-	@echo "$(YELLOW)Total build time:  $$((`date +"%s"` - $(START_TIME)))s"
+	@$(ECHO) "$(INV)$(YELLOW)Build completed: `date`$(NONE)"
+	@$(ECHO) "$(YELLOW)Total build time:  $$((`date +"%s"` - $(START_TIME)))s"
 
 
 real-show:
-	@echo "HOME:         $(HOME)"
-	@echo "SHELL:        $(SHELL)"
-	@echo "EXE_EXT:      $(EXE_EXT)"
-	@echo "LIB_EXT:      $(LIB_EXT)"
-	@echo "DYNLIB:       $(DYNLIB)"
-	@echo "STCLIB:       $(STCLIB)"
-	@echo "CC:           $(CC)"
-	@echo "CXX:          $(CXX)"
-	@echo "CFLAGS:       $(CFLAGS)"
-	@echo "CXXFLAGS:     $(CXXFLAGS)"
-	@echo "LD:           $(LD)"
-	@echo "LDFLAGS:      $(LDFLAGS)"
-	@echo "AR:           $(AR)"
-	@echo "ARFLAGS:      $(ARFLAGS)"
-	@echo ""
-	@echo "PLATFORM:     $(PLATFORM)"
-	@echo "TARGET:       $(TARGET)"
-	@echo "OUTBIN:       $(OUTBIN)"
-	@echo "OUTLIB:       $(OUTLIB)"
-	@echo "OUTOBS:       $(OUTOBS)"
-	@echo "OUTDIRS:      "
-	@for X in $(OUTDIRS); do echo "              $$X"; done
-	@echo "HEADERS:      "
-	@for X in $(HEADERS); do echo "              $$X"; done
-	@echo "COBS:          "
-	@for X in $(COBS); do echo "              $$X"; done
-	@echo "CPPOBS:          "
-	@for X in $(CPPOBS); do echo "              $$X"; done
-	@echo "OBS:          "
-	@for X in $(OBS); do echo "              $$X"; done
-	@echo "BIN_COBS:       "
-	@for X in $(BIN_COBS); do echo "              $$X"; done
-	@echo "BIN_CPPOBS:       "
-	@for X in $(BIN_CPPOBS); do echo "              $$X"; done
-	@echo "BINOBS:       "
-	@for X in $(BINOBS); do echo "              $$X"; done
-	@echo "BINPROGS:     "
-	@for X in $(BINPROGS); do echo "              $$X"; done
-	@echo "SOURCES:     "
-	@for X in $(SOURCES); do echo "              $$X"; done
-	@echo "PWD:          $(PWD)"
+	@$(ECHO) "HOME:         $(HOME)"
+	@$(ECHO) "SHELL:        $(SHELL)"
+	@$(ECHO) "EXE_EXT:      $(EXE_EXT)"
+	@$(ECHO) "LIB_EXT:      $(LIB_EXT)"
+	@$(ECHO) "DYNLIB:       $(DYNLIB)"
+	@$(ECHO) "STCLIB:       $(STCLIB)"
+	@$(ECHO) "CC:           $(CC)"
+	@$(ECHO) "CXX:          $(CXX)"
+	@$(ECHO) "CFLAGS:       $(CFLAGS)"
+	@$(ECHO) "CXXFLAGS:     $(CXXFLAGS)"
+	@$(ECHO) "LD:           $(LD)"
+	@$(ECHO) "LDFLAGS:      $(LDFLAGS)"
+	@$(ECHO) "AR:           $(AR)"
+	@$(ECHO) "ARFLAGS:      $(ARFLAGS)"
+	@$(ECHO) ""
+	@$(ECHO) "PLATFORM:     $(PLATFORM)"
+	@$(ECHO) "TARGET:       $(TARGET)"
+	@$(ECHO) "OUTBIN:       $(OUTBIN)"
+	@$(ECHO) "OUTLIB:       $(OUTLIB)"
+	@$(ECHO) "OUTOBS:       $(OUTOBS)"
+	@$(ECHO) "OUTDIRS:      "
+	@for X in $(OUTDIRS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "HEADERS:      "
+	@for X in $(HEADERS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "COBS:          "
+	@for X in $(COBS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "CPPOBS:          "
+	@for X in $(CPPOBS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "OBS:          "
+	@for X in $(OBS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "BIN_COBS:       "
+	@for X in $(BIN_COBS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "BIN_CPPOBS:       "
+	@for X in $(BIN_CPPOBS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "BINOBS:       "
+	@for X in $(BINOBS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "BINPROGS:     "
+	@for X in $(BINPROGS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "SOURCES:     "
+	@for X in $(SOURCES); do $(ECHO) "              $$X"; done
+	@$(ECHO) "PWD:          $(PWD)"
 
 show:	real-show
-	@echo "Only target 'show' selected, ending now."
+	@$(ECHO) "Only target 'show' selected, ending now."
 	@false
 
 $(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c
-	@echo "[$(BLUE)Building$(NONE)    ]    [$@]"
+	@$(ECHO) "[$(BLUE)Building$(NONE)    ]    [$@]"
 	@$(CC) $(CFLAGS) -o $@ $< ||\
-		(echo "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
+		($(ECHO) "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
 
 $(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp
-	@echo "[$(BLUE)Building$(NONE)    ]    [$@]"
+	@$(ECHO) "[$(BLUE)Building$(NONE)    ]    [$@]"
 	@$(CXX) $(CXXFLAGS) -o $@ $< ||\
-		(echo "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
+		($(ECHO) "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
 
 deps:	Make.deps
 
 Make.deps:	$(HEADERS)
-	@echo "$(RED)Making dependencies ... (this could take some time)$(NONE)"
+	@$(ECHO) "$(RED)Making dependencies ... (this could take some time)$(NONE)"
 	@for X in $(SOURCES); do\
 		export DEP="`$(CC) $(INCLUDE_DIRS) -MM $$X`";\
-		echo $(OUTOBS)/$$DEP;\
+		$(ECHO) $(OUTOBS)/$$DEP;\
 	done > Make.deps
 
 
 $(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
-	@echo "[$(GREEN)Linking$(NONE)     ]    [$@]"
+	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
 	@$(LD) $< $(OBS) -o $@ $(LDFLAGS) ||\
-		(echo "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
+		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
-	@echo "[$(GREEN)Linking$(NONE)     ]    [$@]"
+	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
 	@$(LD) $< $(OBS) -o $@ $(LDFLAGS) ||\
-		(echo "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
+		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(DYNLIB):	$(OBS)
-	@echo "[$(GREEN)Linking$(NONE)     ]    [$@]"
+	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
 	@$(LD) -shared $^ -o $@ $(LDFLAGS) ||\
-		(echo "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
+		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(STCLIB):	$(OBS)
-	@echo "[$(GREEN)Linking$(NONE)     ]    [$@]"
+	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
 	@$(AR) $(ARFLAGS) $@ $^ ||\
-		(echo "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
+		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(OUTDIRS):
-	@echo "[$(CYAN)Creating dir$(NONE)]    [$@]"
+	@$(ECHO) "[$(CYAN)Creating dir$(NONE)]    [$@]"
 	@mkdir -p $@ ||\
-		(echo "$(INV)$(RED)[mkdir failure]   [$@]$(NONE)" ; exit 127)
+		($(ECHO) "$(INV)$(RED)[mkdir failure]   [$@]$(NONE)" ; exit 127)
 
 clean-release:
 	rm -rfv release Make.deps
@@ -467,5 +470,5 @@ clean-all:	clean-release clean-debug
 	rm -rfv include
 
 clean:
-	echo Choose either clean-release or clean-debug
+	$(ECHO) Choose either clean-release or clean-debug
 

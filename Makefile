@@ -300,7 +300,7 @@ AR=ar
 ARFLAGS= rcs
 
 
-.PHONY:	help real-help show real-show debug release clean-all
+.PHONY:	help real-help show real-show debug release clean-all deps
 
 # ######################################################################
 # All the conditional targets

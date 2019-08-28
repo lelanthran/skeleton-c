@@ -8,6 +8,8 @@
 int main (int argc, char **argv)
 {
    int val = 12;
+   argc = argc;
+   argv = argv;
 
    printf ("Module one version: [%s]\n", MODULE_ONE_VERSION);
    printf ("Module two version: [%s]\n", MODULE_TWO_VERSION);

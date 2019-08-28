@@ -156,6 +156,20 @@ GCC=gcc
 GXX=g++
 
 
+# ######################################################################
+# Set some colours for echo to use
+NONE:=\e[0m
+INV:=\e[7m
+RED:=\e[31m
+GREEN:=\e[32m
+BLUE:=\e[34m
+CYAN:=\e[36m
+YELLOW:=\e[33m
+
+
+# ######################################################################
+# We record the start time, for determining how long the build took
+START_TIME:=$(shell date +"%s")
 
 
 # ######################################################################
@@ -222,7 +236,7 @@ TARGET=$(shell $(GCC) -dumpmachine)
 OUTLIB=$(OUTDIR)/lib/$(TARGET)
 OUTBIN=$(OUTDIR)/bin/$(TARGET)
 OUTOBS=$(OUTDIR)/obs/$(TARGET)
-OUTDIRS=$(OUTLIB) $(OUTBIN) $(OUTOBS)
+OUTDIRS=$(OUTLIB) $(OUTBIN) $(OUTOBS) include
 
 
 # ######################################################################
@@ -334,18 +348,24 @@ real-help:
 
 # ######################################################################
 # Grab the dependencies.
-include Make.deps
+-include Make.deps
 
-real-all:	real-show $(DYNLIB) $(STCLIB) $(BINPROGS)
+real-all:	real-show $(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
 
 all:	real-all
-	mkdir -p include
-	cp -Rv $(HEADERS) include
-	ln -f -s $(STCLNK_TARGET) $(STCLNK_NAME)
-	ln -f -s $(DYNLNK_TARGET) $(DYNLNK_NAME)
-	cp $(OUTLIB)/* $(OUTDIR)/lib
+	@echo "[$(CYAN)Copying$(NONE)     ]    [ -> ./include/]"
+	@cp -Rv $(HEADERS) include
+	@echo "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET) -> $(STCLNK_NAME)]"
+	@ln -f -s $(STCLNK_TARGET) $(STCLNK_NAME)
+	@echo "[$(CYAN)Soft linking$(NONE)]    [$(DYNLNK_TARGET) -> $(DYNLNK_NAME)]"
+	@ln -f -s $(DYNLNK_TARGET) $(DYNLNK_NAME)
+	@echo "[$(CYAN)Copying$(NONE)     ]    [ -> $(OUTDIR)/lib]"
+	@cp $(OUTLIB)/* $(OUTDIR)/lib
+	@echo "$(INV)$(YELLOW)Build completed: `date`$(NONE)"
+	@echo "$(YELLOW)Total build time:  $$((`date +"%s"` - $(START_TIME)))s"
 
-real-show:	$(OUTDIRS)
+
+real-show:
 	@echo "HOME:         $(HOME)"
 	@echo "SHELL:        $(SHELL)"
 	@echo "EXE_EXT:      $(EXE_EXT)"
@@ -392,41 +412,50 @@ show:	real-show
 	@echo "Only target 'show' selected, ending now."
 	@false
 
-$(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c Make.deps
-	@echo "Building     [$@]"
-	@$(CC) $(CFLAGS) -o $@ $<
+$(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c
+	@echo "[$(BLUE)Building$(NONE)    ]    [$@]"
+	@$(CC) $(CFLAGS) -o $@ $< ||\
+		(echo "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
 
-$(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp Make.deps
-	@echo "Building     [$@]"
-	@$(CXX) $(CXXFLAGS) -o $@ $<
+$(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp
+	@echo "[$(BLUE)Building$(NONE)    ]    [$@]"
+	@$(CXX) $(CXXFLAGS) -o $@ $< ||\
+		(echo "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
 
 deps:	Make.deps
 
 Make.deps:	$(HEADERS)
-	for X in $(SOURCES); do\
+	@echo "$(RED)Making dependencies ... (this could take some time)$(NONE)"
+	@for X in $(SOURCES); do\
 		export DEP="`$(CC) $(INCLUDE_DIRS) -MM $$X`";\
 		echo $(OUTOBS)/$$DEP;\
 	done > Make.deps
 
 
 $(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
-	@echo "Linking      [$@]"
-	@$(LD) $< $(OBS) -o $@ $(LDFLAGS)
+	@echo "[$(GREEN)Linking$(NONE)     ]    [$@]"
+	@$(LD) $< $(OBS) -o $@ $(LDFLAGS) ||\
+		(echo "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
-	@echo "Linking      [$@]"
-	@$(LD) $< $(OBS) -o $@ $(LDFLAGS)
+	@echo "[$(GREEN)Linking$(NONE)     ]    [$@]"
+	@$(LD) $< $(OBS) -o $@ $(LDFLAGS) ||\
+		(echo "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(DYNLIB):	$(OBS)
-	@echo "Linking      [$@]"
-	@$(LD) -shared $^ -o $@ $(LDFLAGS)
+	@echo "[$(GREEN)Linking$(NONE)     ]    [$@]"
+	@$(LD) -shared $^ -o $@ $(LDFLAGS) ||\
+		(echo "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(STCLIB):	$(OBS)
-	@echo "Linking      [$@]"
-	@$(AR) $(ARFLAGS) $@ $^
+	@echo "[$(GREEN)Linking$(NONE)     ]    [$@]"
+	@$(AR) $(ARFLAGS) $@ $^ ||\
+		(echo "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(OUTDIRS):
-	mkdir -p $@
+	@echo "[$(CYAN)Creating dir$(NONE)]    [$@]"
+	@mkdir -p $@ ||\
+		(echo "$(INV)$(RED)[mkdir failure]   [$@]$(NONE)" ; exit 127)
 
 clean-release:
 	rm -rfv release Make.deps

@@ -324,6 +324,7 @@ real-help:
 	@echo "show:                Display all the variable values that will be"
 	@echo "                     used during execution. Also 'show debug' or"
 	@echo "                     'show release' works."
+	@echo "deps:                Make the dependencies only."
 	@echo "debug:               Build debug binaries."
 	@echo "release:             Build release binaries."
 	@echo "clean-debug:         Clean a debug build (release is ignored)."
@@ -391,11 +392,13 @@ show:	real-show
 	@echo "Only target 'show' selected, ending now."
 	@false
 
-$(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c
-	$(CC) $(CFLAGS) -o $@ $<
+$(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c Make.deps
+	@echo "Building     [$@]"
+	@$(CC) $(CFLAGS) -o $@ $<
 
-$(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp
-	$(CXX) $(CXXFLAGS) -o $@ $<
+$(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp Make.deps
+	@echo "Building     [$@]"
+	@$(CXX) $(CXXFLAGS) -o $@ $<
 
 deps:	Make.deps
 
@@ -407,25 +410,29 @@ Make.deps:	$(HEADERS)
 
 
 $(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
-	$(LD) $< $(OBS) -o $@ $(LDFLAGS)
+	@echo "Linking      [$@]"
+	@$(LD) $< $(OBS) -o $@ $(LDFLAGS)
 
 $(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
-	$(LD) $< $(OBS) -o $@ $(LDFLAGS)
+	@echo "Linking      [$@]"
+	@$(LD) $< $(OBS) -o $@ $(LDFLAGS)
 
 $(DYNLIB):	$(OBS)
-	$(LD) -shared $^ -o $@ $(LDFLAGS)
+	@echo "Linking      [$@]"
+	@$(LD) -shared $^ -o $@ $(LDFLAGS)
 
 $(STCLIB):	$(OBS)
-	$(AR) $(ARFLAGS) $@ $^
+	@echo "Linking      [$@]"
+	@$(AR) $(ARFLAGS) $@ $^
 
 $(OUTDIRS):
 	mkdir -p $@
 
 clean-release:
-	rm -rfv release
+	rm -rfv release Make.deps
 
 clean-debug:
-	rm -rfv debug
+	rm -rfv debug Make.deps
 
 clean-all:	clean-release clean-debug
 	rm -rfv include

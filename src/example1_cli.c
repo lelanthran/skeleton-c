@@ -226,6 +226,17 @@ int main (int argc, char **argv)
    /* All your commands must be stored in this array, along with the
     * function to call for that command and the minimum and maximum number
     * of arguments that the command takes.
+    *
+    * Note that the minimum/maximum argument count includes the command
+    * itself, so you need to addd 1 to the actual number of arguments that
+    * your command takes.
+    *
+    * For example, 'help' takes only a single command - the name of the
+    * command to provide help for. This means that, together with the
+    * 'help' command itself, there must be exactly two arguments.
+    *
+    * The command is stored in l_args[0], and all its arguments are stored
+    * from l_args[1] onwards.
     */
    static const struct command_t {
       const char *cmd;

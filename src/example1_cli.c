@@ -199,6 +199,10 @@ int cmd_square (const char **args)
       fprintf (stderr, "Failed to scan [%s] as an integer.\n", args[1]);
       return EXIT_FAILURE;
    }
+
+   val = module_one_example (val);
+   printf ("SQUARE: %i\n", val);
+
    return EXIT_SUCCESS;
 }
 
@@ -230,7 +234,7 @@ int main (int argc, char **argv)
       size_t max_args;
    } cmds[] = {
       { "help",                  cmd_help,               2, 2     },
-      { "square",                cmd_square,             3, 3     },
+      { "square",                cmd_square,             2, 2     },
    };
 
    static const size_t ncmds = sizeof cmds / sizeof cmds[0];

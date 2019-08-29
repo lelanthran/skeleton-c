@@ -139,11 +139,19 @@ endif
 ifndef GXX
 	GXX=g++
 endif
+ifndef LD_PROG
+	LD_PROG=gcc
+endif
+ifndef LD_LIB
+	LD_LIB=gcc
+endif
 
 # ######################################################################
 # Declare all the flags we need to compile and link
-CC=$(GCC)
-CXX=$(GXX)
+CC:=$(GCC)
+CXX:=$(GXX)
+PROG_LD=$(GCC_LD_PROG)
+LIB_LD=$(GCC_LD_LIB)
 
 INCLUDE_DIRS:=\
 	$(foreach ipath,$(INCLUDE_PATHS),-I$(ipath))
@@ -208,14 +216,14 @@ real-help:
 real-all:	$(REAL_SHOW) $(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
 
 all:	real-all
-	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> ./include/]"
-	@cp -R $(HEADERS) include
 	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET)]"
 	@ln -f -s $(STCLNK_TARGET) $(STCLNK_NAME)
 	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(DYNLNK_TARGET)]"
 	@ln -f -s $(DYNLNK_TARGET) $(DYNLNK_NAME)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> $(OUTDIR)/lib]"
 	@cp $(OUTLIB)/* $(OUTDIR)/lib
+	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> ./include/]"
+	@cp -R $(HEADERS) include
 	@$(ECHO) "$(INV)$(YELLOW)Build completed: `date`$(NONE)"
 	@$(ECHO) "$(YELLOW)Total build time:  $$((`date +"%s"` - $(START_TIME)))s"
 
@@ -231,7 +239,8 @@ real-show:
 	@$(ECHO) "CXX:          $(CXX)"
 	@$(ECHO) "CFLAGS:       $(CFLAGS)"
 	@$(ECHO) "CXXFLAGS:     $(CXXFLAGS)"
-	@$(ECHO) "LD:           $(LD)"
+	@$(ECHO) "LD_LIB:       $(LD_LIB)"
+	@$(ECHO) "LD_PROG:      $(LD_PROG)"
 	@$(ECHO) "LDFLAGS:      $(LDFLAGS)"
 	@$(ECHO) "AR:           $(AR)"
 	@$(ECHO) "ARFLAGS:      $(ARFLAGS)"
@@ -289,17 +298,17 @@ Make.deps:	$(HEADERS)
 
 $(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
-	@$(LD) $< $(OBS) -o $@ $(LDFLAGS) ||\
+	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(EXTRA_PROG_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
-	@$(LD) $< $(OBS) -o $@ $(LDFLAGS) ||\
+	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(EXTRA_PROG_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(DYNLIB):	$(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
-	@$(LD) -shared $^ -o $@ $(LDFLAGS) ||\
+	@$(LD_LIB) -shared $^ -o $@ $(LDFLAGS) $(EXTRA_LIB_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(STCLIB):	$(OBS)

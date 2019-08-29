@@ -225,7 +225,8 @@ all:	real-all
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> ./include/]"
 	@cp -R $(HEADERS) include
 	@$(ECHO) "$(INV)$(YELLOW)Build completed: `date`$(NONE)"
-	@$(ECHO) "$(YELLOW)Total build time:  $$((`date +"%s"` - $(START_TIME)))s"
+	@$(ECHO) "$(YELLOW)Total build time:  $$((`date +"%s"` - $(START_TIME)))s"\
+		"$(NONE)"
 
 
 real-show:

@@ -228,7 +228,7 @@ int main (int argc, char **argv)
     * of arguments that the command takes.
     *
     * Note that the minimum/maximum argument count includes the command
-    * itself, so you need to addd 1 to the actual number of arguments that
+    * itself, so you need to add 1 to the actual number of arguments that
     * your command takes.
     *
     * For example, 'help' takes only a single command - the name of the
@@ -248,11 +248,9 @@ int main (int argc, char **argv)
       { "square",                cmd_square,             2, 2     },
    };
 
-   static const size_t ncmds = sizeof cmds / sizeof cmds[0];
-
    const struct command_t *cmd = NULL;
 
-
+   printf ("Library version: [%s]\n", skeleton_version);
    printf ("Module one version: [%s]\n", MODULE_ONE_VERSION);
    printf ("Module two version: [%s]\n", MODULE_TWO_VERSION);
 

@@ -125,6 +125,9 @@ CPPOBS:=\
 	$(foreach fname,$(LIBRARY_OBJECT_CPPSOURCEFILES),$(OUTOBS)/$(fname).o)
 
 OBS:=$(COBS) $(CPPOBS)
+ALL_OBS:=$(OBS) $(BINOBS)
+DEPS:=\
+	$(subst $(OUTOBS),src,$(subst .o,.d,$(ALL_OBS)))
 
 # ######################################################################
 # Find all the source files so that we can do dependencies properly
@@ -209,11 +212,7 @@ real-help:
 	@$(ECHO) "clean-all:           Clean everything."
 
 
-# ######################################################################
-# Grab the dependencies.
--include Make.deps
-
-real-all:	$(REAL_SHOW) $(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
+real-all:	$(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
 
 all:	real-all
 	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET)]"
@@ -230,79 +229,85 @@ all:	real-all
 
 
 real-show:
-	@$(ECHO) "HOME:         $(HOME)"
-	@$(ECHO) "SHELL:        $(SHELL)"
-	@$(ECHO) "EXE_EXT:      $(EXE_EXT)"
-	@$(ECHO) "LIB_EXT:      $(LIB_EXT)"
-	@$(ECHO) "DYNLIB:       $(DYNLIB)"
-	@$(ECHO) "STCLIB:       $(STCLIB)"
-	@$(ECHO) "CC:           $(CC)"
-	@$(ECHO) "CXX:          $(CXX)"
-	@$(ECHO) "CFLAGS:       $(CFLAGS)"
-	@$(ECHO) "CXXFLAGS:     $(CXXFLAGS)"
-	@$(ECHO) "LD_LIB:       $(LD_LIB)"
-	@$(ECHO) "LD_PROG:      $(LD_PROG)"
-	@$(ECHO) "LDFLAGS:      $(LDFLAGS)"
-	@$(ECHO) "AR:           $(AR)"
-	@$(ECHO) "ARFLAGS:      $(ARFLAGS)"
-	@$(ECHO) ""
-	@$(ECHO) "PLATFORM:     $(PLATFORM)"
-	@$(ECHO) "TARGET:       $(TARGET)"
-	@$(ECHO) "OUTBIN:       $(OUTBIN)"
-	@$(ECHO) "OUTLIB:       $(OUTLIB)"
-	@$(ECHO) "OUTOBS:       $(OUTOBS)"
-	@$(ECHO) "OUTDIRS:      "
+	@$(ECHO) "$(GREEN)HOME$(NONE)         $(HOME)"
+	@$(ECHO) "$(GREEN)SHELL$(NONE)        $(SHELL)"
+	@$(ECHO) "$(GREEN)EXE_EXT$(NONE)      $(EXE_EXT)"
+	@$(ECHO) "$(GREEN)LIB_EXT$(NONE)      $(LIB_EXT)"
+	@$(ECHO) "$(GREEN)DYNLIB$(NONE)       $(DYNLIB)"
+	@$(ECHO) "$(GREEN)STCLIB$(NONE)       $(STCLIB)"
+	@$(ECHO) "$(GREEN)CC$(NONE)           $(CC)"
+	@$(ECHO) "$(GREEN)CXX$(NONE)          $(CXX)"
+	@$(ECHO) "$(GREEN)CFLAGS$(NONE)       $(CFLAGS)"
+	@$(ECHO) "$(GREEN)CXXFLAGS$(NONE)     $(CXXFLAGS)"
+	@$(ECHO) "$(GREEN)LD_LIB$(NONE)       $(LD_LIB)"
+	@$(ECHO) "$(GREEN)LD_PROG$(NONE)      $(LD_PROG)"
+	@$(ECHO) "$(GREEN)LDFLAGS$(NONE)      $(LDFLAGS)"
+	@$(ECHO) "$(GREEN)AR$(NONE)           $(AR)"
+	@$(ECHO) "$(GREEN)ARFLAGS$(NONE)      $(ARFLAGS)"
+	@$(ECHO) "$(GREEN)"
+	@$(ECHO) "$(GREEN)PLATFORM$(NONE)     $(PLATFORM)"
+	@$(ECHO) "$(GREEN)TARGET$(NONE)       $(TARGET)"
+	@$(ECHO) "$(GREEN)OUTBIN$(NONE)       $(OUTBIN)"
+	@$(ECHO) "$(GREEN)OUTLIB$(NONE)       $(OUTLIB)"
+	@$(ECHO) "$(GREEN)OUTOBS$(NONE)       $(OUTOBS)"
+	@$(ECHO) "$(GREEN)OUTDIRS$(NONE)      "
 	@for X in $(OUTDIRS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "HEADERS:      "
+	@$(ECHO) "$(GREEN)DEPS$(NONE)      "
+	@for X in $(DEPS); do $(ECHO) "              $$X"; done
+	@$(ECHO) "$(GREEN)HEADERS$(NONE)      "
 	@for X in $(HEADERS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "COBS:          "
+	@$(ECHO) "$(GREEN)COBS$(NONE)          "
 	@for X in $(COBS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "CPPOBS:          "
+	@$(ECHO) "$(GREEN)CPPOBS$(NONE)          "
 	@for X in $(CPPOBS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "OBS:          "
+	@$(ECHO) "$(GREEN)OBS$(NONE)          "
 	@for X in $(OBS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "BIN_COBS:       "
+	@$(ECHO) "$(GREEN)BIN_COBS$(NONE)       "
 	@for X in $(BIN_COBS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "BIN_CPPOBS:       "
+	@$(ECHO) "$(GREEN)BIN_CPPOBS$(NONE)       "
 	@for X in $(BIN_CPPOBS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "BINOBS:       "
+	@$(ECHO) "$(GREEN)BINOBS$(NONE)       "
 	@for X in $(BINOBS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "BINPROGS:     "
+	@$(ECHO) "$(GREEN)BINPROGS$(NONE)     "
 	@for X in $(BINPROGS); do $(ECHO) "              $$X"; done
-	@$(ECHO) "SOURCES:     "
+	@$(ECHO) "$(GREEN)SOURCES$(NONE)     "
 	@for X in $(SOURCES); do $(ECHO) "              $$X"; done
-	@$(ECHO) "PWD:          $(PWD)"
+	@$(ECHO) "$(GREEN)PWD$(NONE)          $(PWD)"
 
 show:	real-show
 	@$(ECHO) "Only target 'show' selected, ending now."
 	@false
 
-$(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c
+$(DEPS): $(HEADERS)
+
+deps: $(DEPS)
+
+src/%.d: src/%.c
+	@$(ECHO) "[$(RED)Dependency$(NONE)  ]    [$@]"
+	@$(CC) $(CFLAGS) -MM -MF $@ -MT $(OUTOBS)/$*.o $< ||\
+		($(ECHO) "$(INV)$(RED)[Depend failure ]   [$@]$(NONE)" ; exit 127)
+
+src/%.d: src/%.cpp
+	@$(ECHO) "[$(RED)Dependency$(NONE)  ]    [$@]"
+	@$(CXX) $(CXXFLAGS) -MM -MF $@ $< ||\
+		($(ECHO) "$(INV)$(RED)[Depend failure ]   [$@]$(NONE)" ; exit 127)
+
+$(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c src/%.d
 	@$(ECHO) "[$(BLUE)Building$(NONE)    ]    [$@]"
 	@$(CC) $(CFLAGS) -o $@ $< ||\
 		($(ECHO) "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
 
-$(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp
+$(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp src/%.d
 	@$(ECHO) "[$(BLUE)Building$(NONE)    ]    [$@]"
 	@$(CXX) $(CXXFLAGS) -o $@ $< ||\
 		($(ECHO) "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
 
-deps:	Make.deps
-
-Make.deps:	$(HEADERS)
-	@$(ECHO) "$(RED)Making dependencies ... (this could take some time)$(NONE)"
-	@for X in $(SOURCES); do\
-		export DEP="`$(CC) $(INCLUDE_DIRS) -MM $$X`";\
-		$(ECHO) $(OUTOBS)/$$DEP;\
-	done > Make.deps
-
-
-$(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
+$(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
 	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(EXTRA_PROG_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
-$(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS) $(OUTDIRS)
+$(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
 	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(EXTRA_PROG_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
@@ -323,14 +328,16 @@ $(OUTDIRS):
 		($(ECHO) "$(INV)$(RED)[mkdir failure]   [$@]$(NONE)" ; exit 127)
 
 clean-release:
-	@rm -rfv release Make.deps
+	@rm -rfv release
 
 clean-debug:
-	@rm -rfv debug Make.deps
+	@rm -rfv debug
 
 clean-all:	clean-release clean-debug
 	@rm -rfv include
+	@rm -rfv `find . | grep "\.d$$"`
 
 clean:
 	@$(ECHO) Choose either clean-release or clean-debug
 
+include $(DEPS)

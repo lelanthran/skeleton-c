@@ -151,6 +151,7 @@ endif
 
 # ######################################################################
 # Declare all the flags we need to compile and link
+BUILD_TIMESTAMP:=$(shell date +"%Y%m%d%H%M%S")
 CC:=$(GCC)
 CXX:=$(GXX)
 PROG_LD=$(GCC_LD_PROG)
@@ -170,6 +171,7 @@ COMMONFLAGS:=\
 	-W -Wall -c -fPIC \
 	-DPLATFORM=$(PLATFORM) -DPLATFORM_$(PLATFORM) \
 	-D$(PROJNAME)_version='"$(VERSION)"'\
+	-DBUILD_TIMESTAMP='"$(BUILD_TIMESTAMP)"'\
 	$(PLATFORM_CFLAGS)\
 	$(INCLUDE_DIRS)
 

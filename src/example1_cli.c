@@ -250,9 +250,10 @@ int main (int argc, char **argv)
 
    const struct command_t *cmd = NULL;
 
-   printf ("Library version: [%s]\n", skeleton_version);
-   printf ("Module one version: [%s]\n", MODULE_ONE_VERSION);
-   printf ("Module two version: [%s]\n", MODULE_TWO_VERSION);
+   printf ("Library version:        [%s]\n", skeleton_version);
+   printf ("Module one version:     [%s]\n", MODULE_ONE_VERSION);
+   printf ("Module two version:     [%s]\n", MODULE_TWO_VERSION);
+   printf ("Built [YYYYMMDDHHmmSS]: [%s]\n", BUILD_TIMESTAMP);
 
    /* Make sure we call the exit handler if anything happens and we are
     * not able to return cleanly.

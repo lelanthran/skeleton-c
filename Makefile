@@ -39,7 +39,7 @@ ifneq ($(MAKEPROGRAM_EXE),)
 ifeq ($(strip $(GITSHELL)),)
 $(error On windows this must be executed from the Git bash shell)
 endif
-	HOME:=$(HOMEDRIVE)$(HOMEPATH)
+	HOME=$(subst \,/,$(HOMEDRIVE)$(HOMEPATH))
 	PLATFORM:=Windows
 	EXE_EXT:=.exe
 	LIB_EXT:=.dll
@@ -52,7 +52,7 @@ ifneq ($(MAKEPROGRAM_MINGW),)
 ifeq ($(strip $(GITSHELL)),)
 $(error On windows this must be executed from the Git bash shell)
 endif
-	HOME:=$(HOMEDRIVE)$(HOMEPATH)
+	HOME=$(subst \,/,$(HOMEDRIVE)$(HOMEPATH))
 	PLATFORM:=Windows
 	EXE_EXT:=.exe
 	LIB_EXT:=.dll

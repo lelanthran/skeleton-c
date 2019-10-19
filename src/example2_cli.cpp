@@ -5,11 +5,14 @@
 #include "module_one.h"
 #include "module_two.h"
 
-int main (int argc, char **argv)
+/* **********************************************************************
+ * This is bare bones; the full example for how to use the framework to
+ * write an intuitive command-line interface is in example1_cli.c - this
+ * file is only to show that the C++ building works fine.
+ */
+int main (void)
 {
    int val = 12;
-   argc = argc;
-   argv = argv;
 
    printf ("Module one version: [%s]\n", MODULE_ONE_VERSION);
    printf ("Module two version: [%s]\n", MODULE_TWO_VERSION);

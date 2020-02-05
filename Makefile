@@ -6,6 +6,10 @@ $(error $$PROJNAME not defined. Is the 'build.config' file missing?)
 endif
 
 VERSION?=0.0.0
+VERSION_SPACES=$(subst ., ,$(VERSION))
+VERSION_MAJOR=$(word 1, $(VERSION_SPACES))
+VERSION_MINOR=$(word 2, $(VERSION_SPACES))
+VERSION_BUILD=$(word 3, $(VERSION_SPACES))
 
 # ######################################################################
 # Set some colours for $(ECHO) to use
@@ -100,9 +104,10 @@ BINPROGS:=\
 	$(foreach fname,$(MAIN_PROGRAM_CSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))\
 	$(foreach fname,$(MAIN_PROGRAM_CPPSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))
 
-DYNLIB:=$(OUTLIB)/lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
+DYNLIB:=$(OUTLIB)/lib$(PROJNAME)$(LIB_EXT).$(VERSION)
+SONAME:=lib$(PROJNAME)$(LIB_EXT).$(VERSION_MAJOR)
 STCLIB:=$(OUTLIB)/lib$(PROJNAME)-$(VERSION).a
-DYNLNK_TARGET:=lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
+DYNLNK_TARGET:=lib$(PROJNAME)$(LIB_EXT).$(VERSION)
 STCLNK_TARGET:=lib$(PROJNAME)-$(VERSION).a
 DYNLNK_NAME:=$(OUTLIB)/lib$(PROJNAME)$(LIB_EXT)
 STCLNK_NAME:=$(OUTLIB)/lib$(PROJNAME).a
@@ -276,6 +281,9 @@ real-show:
 	@$(ECHO) "$(GREEN)SOURCES$(NONE)     "
 	@for X in $(SOURCES); do $(ECHO) "              $$X"; done
 	@$(ECHO) "$(GREEN)PWD$(NONE)          $(PWD)"
+	@$(ECHO) "$(GREEN)VERSION_MAJOR$(NONE)          $(VERSION_MAJOR)"
+	@$(ECHO) "$(GREEN)VERSION_MINOR$(NONE)          $(VERSION_MINOR)"
+	@$(ECHO) "$(GREEN)VERSION_BUILD$(NONE)          $(VERSION_BUILD)"
 
 show:	real-show
 	@$(ECHO) "Only target 'show' selected, ending now."
@@ -317,7 +325,8 @@ $(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS)
 
 $(DYNLIB):	$(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
-	@$(LD_LIB) -shared $^ -o $@ $(LDFLAGS) $(EXTRA_LIB_LDFLAGS) ||\
+	@$(LD_LIB) -shared $^ -o $@ $(LDFLAGS) $(EXTRA_LIB_LDFLAGS) \
+		-Wl,-soname=$(SONAME) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(STCLIB):	$(OBS)

@@ -77,14 +77,14 @@ endif
 # ######################################################################
 # Set the output directories, output filenames
 
-OUTDIR=debug
+OUTDIR=debug/$(PROJNAME)-$(VERSION)
 
 ifneq (,$(findstring debug,$(MAKECMDGOALS)))
-OUTDIR=debug
+OUTDIR=debug/$(PROJNAME)-$(VERSION)
 endif
 
 ifneq (,$(findstring release,$(MAKECMDGOALS)))
-OUTDIR=release
+OUTDIR=release/$(PROJNAME)-$(VERSION)
 endif
 
 TARGET:=$(shell $(GCC) -dumpmachine)
@@ -343,4 +343,4 @@ clean-all:	clean-release clean-debug
 clean:
 	@$(ECHO) Choose either clean-release or clean-debug
 
-include $(DEPS)
+# include $(DEPS)

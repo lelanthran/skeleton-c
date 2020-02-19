@@ -1,0 +1,5 @@
+-I.
+-I./include
+-Dskeleton_version='"0.1.2"'
+-DBUILD_TIMESTAMP='"201909162104"'
+

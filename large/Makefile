@@ -107,6 +107,9 @@ STCLNK_TARGET:=lib$(PROJNAME)-$(VERSION).a
 DYNLNK_NAME:=$(OUTLIB)/lib$(PROJNAME)$(LIB_EXT)
 STCLNK_NAME:=$(OUTLIB)/lib$(PROJNAME).a
 
+# ######################################################################
+# Find all the source files, per project, then create the .o for each
+# one in the $(OUTOBS) folder. Need to register error on duplicates.
 
 # ######################################################################
 # Declare the intermediate outputs

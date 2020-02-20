@@ -4,3 +4,6 @@
 # genmake.config.
 #
 
+. genmake.config
+
+echo $SUBPROJS

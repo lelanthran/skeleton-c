@@ -108,16 +108,6 @@ DYNLNK_NAME:=$(OUTLIB)/lib$(PROJNAME)$(LIB_EXT)
 STCLNK_NAME:=$(OUTLIB)/lib$(PROJNAME).a
 
 # ######################################################################
-# Find all the source files, per project, then create the .o for each
-# one in the $(OUTOBS) folder. Need to register error on duplicates, and
-# duplicates must be errors only be within a single sub-proj.
-ALL_SUBPROJ_CSRCS:=$(shell find $(SUBPROJS) | grep -E "\.(c)\$$")
-ALL_SUBPROJ_CXXSRCS:=$(shell find $(SUBPROJS) | grep -E "\.(cpp)\$$")
-ALL_SUBPROJ_COBS:=$(foreach fname,$(ALL_SUBPROJ_CSRCS),$(OUTOBS)/$(subst .c,.o,$(fname)))
-ALL_SUBPROJ_CXXOBS:=$(foreach fname,$(ALL_SUBPROJ_CXXSRCS),$(OUTOBS)/$(subst .c,.o,$(fname)))
-ALL_SUBPROJ_OBS:=$(ALL_SUBPROJ_COBS) $(ALL_SUBPROJ_CXXOBS)
-
-# ######################################################################
 # Declare the intermediate outputs
 BIN_COBS:=\
 	$(foreach fname,$(MAIN_PROGRAM_CSOURCEFILES),$(OUTOBS)/$(fname).o)
@@ -132,6 +122,19 @@ COBS:=\
 
 CPPOBS:=\
 	$(foreach fname,$(LIBRARY_OBJECT_CPPSOURCEFILES),$(OUTOBS)/$(fname).o)
+
+
+# ######################################################################
+# Find all the source files, per project, then create the .o for each
+# one in the $(OUTOBS) folder. Need to register error on duplicates, and
+# duplicates must be errors only be within a single sub-proj.
+ALL_SUBPROJ_CSRCS:=$(shell find $(SUBPROJS) | grep -E "\.(c)\$$")
+ALL_SUBPROJ_CXXSRCS:=$(shell find $(SUBPROJS) | grep -E "\.(cpp)\$$")
+ALL_SUBPROJ_COBS:=$(foreach fname,$(ALL_SUBPROJ_CSRCS),$(OUTOBS)/$(subst .c,.o,$(fname)))
+ALL_SUBPROJ_CXXOBS:=$(foreach fname,$(ALL_SUBPROJ_CXXSRCS),$(OUTOBS)/$(subst .cpp,.o,$(fname)))
+ALL_SUBPROJ_OBS:=$(ALL_SUBPROJ_COBS) $(ALL_SUBPROJ_CXXOBS)
+ALL_SUBPROJ_OBS:=$(filter-out $(BINOBS), $(ALL_SUBPROJ_OBS))
+
 
 OBS:=$(COBS) $(CPPOBS)
 ALL_OBS:=$(OBS) $(BINOBS)

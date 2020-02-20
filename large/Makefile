@@ -100,6 +100,7 @@ BINPROGS:=\
 	$(foreach fname,$(MAIN_PROGRAM_CSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))\
 	$(foreach fname,$(MAIN_PROGRAM_CPPSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))
 
+DYNLIBS:=$(foreach proj,$(SUBPROJS),lib$(OUTLIB)/$(proj)-$(VERSION)$(LIB_EXT))
 DYNLIB:=$(OUTLIB)/lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
 STCLIB:=$(OUTLIB)/lib$(PROJNAME)-$(VERSION).a
 DYNLNK_TARGET:=lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
@@ -117,12 +118,6 @@ BIN_CPPOBS:=\
 
 BINOBS:=$(BIN_COBS) $(BIN_CPPOBS)
 
-COBS:=\
-	$(foreach fname,$(LIBRARY_OBJECT_CSOURCEFILES),$(OUTOBS)/$(fname).o)
-
-CPPOBS:=\
-	$(foreach fname,$(LIBRARY_OBJECT_CPPSOURCEFILES),$(OUTOBS)/$(fname).o)
-
 
 # ######################################################################
 # Find all the source files, per project, then create the .o for each
@@ -136,15 +131,13 @@ ALL_SUBPROJ_OBS:=$(ALL_SUBPROJ_COBS) $(ALL_SUBPROJ_CXXOBS)
 ALL_SUBPROJ_OBS:=$(filter-out $(BINOBS), $(ALL_SUBPROJ_OBS))
 
 
-OBS:=$(COBS) $(CPPOBS)
-ALL_OBS:=$(OBS) $(BINOBS)
-DEPS:=\
-	$(subst $(OUTOBS),src,$(subst .o,.d,$(ALL_OBS)))
+# ######################################################################
+# Set the dep filename for each source
+DEPS:=$(subst .c,.d,$(ALL_SUBPROJ_CSRCS))
+DEPS:=$(DEPS) $(subst .cpp,.d,$(ALL_SUBPROJ_CXXSRCS))
 
 # ######################################################################
 # Find all the source files so that we can do dependencies properly
-SOURCES:=\
-	$(shell find . | grep -E "\.(c|cpp)\$$")
 
 # ######################################################################
 # Declare the build programs
@@ -227,7 +220,7 @@ real-help:
 	@$(ECHO) "clean-all:           Clean everything."
 
 
-real-all:	$(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
+real-all:	$(OUTDIRS) $(DYNLIBS) $(STCLIB) $(BINPROGS)
 
 all:	real-all
 	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET)]"
@@ -248,7 +241,7 @@ real-show:
 	@$(ECHO) "$(GREEN)SHELL$(NONE)        $(SHELL)"
 	@$(ECHO) "$(GREEN)EXE_EXT$(NONE)      $(EXE_EXT)"
 	@$(ECHO) "$(GREEN)LIB_EXT$(NONE)      $(LIB_EXT)"
-	@$(ECHO) "$(GREEN)DYNLIB$(NONE)       $(DYNLIB)"
+	@$(ECHO) "$(GREEN)DYNLIBS$(NONE)      $(DYNLIBS)"
 	@$(ECHO) "$(GREEN)STCLIB$(NONE)       $(STCLIB)"
 	@$(ECHO) "$(GREEN)CC$(NONE)           $(CC)"
 	@$(ECHO) "$(GREEN)CXX$(NONE)          $(CXX)"
@@ -329,7 +322,7 @@ $(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS)
 	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(EXTRA_PROG_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
-$(DYNLIB):	$(OBS)
+$(DYNLIBS):	$(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
 	@$(LD_LIB) -shared $^ -o $@ $(LDFLAGS) $(EXTRA_LIB_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)

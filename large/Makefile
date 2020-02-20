@@ -109,7 +109,13 @@ STCLNK_NAME:=$(OUTLIB)/lib$(PROJNAME).a
 
 # ######################################################################
 # Find all the source files, per project, then create the .o for each
-# one in the $(OUTOBS) folder. Need to register error on duplicates.
+# one in the $(OUTOBS) folder. Need to register error on duplicates, and
+# duplicates must be errors only be within a single sub-proj.
+ALL_SUBPROJ_CSRCS:=$(shell find $(SUBPROJS) | grep -E "\.(c)\$$")
+ALL_SUBPROJ_CXXSRCS:=$(shell find $(SUBPROJS) | grep -E "\.(cpp)\$$")
+ALL_SUBPROJ_COBS:=$(foreach fname,$(ALL_SUBPROJ_CSRCS),$(OUTOBS)/$(subst .c,.o,$(fname)))
+ALL_SUBPROJ_CXXOBS:=$(foreach fname,$(ALL_SUBPROJ_CXXSRCS),$(OUTOBS)/$(subst .c,.o,$(fname)))
+ALL_SUBPROJ_OBS:=$(ALL_SUBPROJ_COBS) $(ALL_SUBPROJ_CXXOBS)
 
 # ######################################################################
 # Declare the intermediate outputs
@@ -279,6 +285,8 @@ real-show:
 	@$(ECHO) "$(GREEN)SOURCES$(NONE)     "
 	@for X in $(SOURCES); do $(ECHO) "              $$X"; done
 	@$(ECHO) "$(GREEN)PWD$(NONE)          $(PWD)"
+	@$(ECHO) "$(GREEN)SOURCES$(NONE)          $(ALL_SUBPROJ_SRCS)"
+	@$(ECHO) "$(GREEN)OBS$(NONE)          $(ALL_SUBPROJ_OBS)"
 
 show:	real-show
 	@$(ECHO) "Only target 'show' selected, ending now."

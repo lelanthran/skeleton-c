@@ -100,7 +100,7 @@ BINPROGS:=\
 	$(foreach fname,$(MAIN_PROGRAM_CSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))\
 	$(foreach fname,$(MAIN_PROGRAM_CPPSOURCEFILES),$(OUTBIN)/$(fname)$(EXE_EXT))
 
-DYNLIBS:=$(foreach proj,$(SUBPROJS),lib$(OUTLIB)/$(proj)-$(VERSION)$(LIB_EXT))
+DYNLIBS:=$(foreach proj,$(SUBPROJS),$(OUTLIB)/$(proj)-$(VERSION)$(LIB_EXT))
 DYNLIB:=$(OUTLIB)/lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
 STCLIB:=$(OUTLIB)/lib$(PROJNAME)-$(VERSION).a
 DYNLNK_TARGET:=lib$(PROJNAME)-$(VERSION)$(LIB_EXT)
@@ -163,7 +163,8 @@ PROG_LD=$(GCC_LD_PROG)
 LIB_LD=$(GCC_LD_LIB)
 
 INCLUDE_DIRS:=\
-	$(foreach ipath,$(INCLUDE_PATHS),-I$(ipath))
+	$(foreach ipath,$(INCLUDE_PATHS),-I$(ipath))\
+	-I.
 
 LIBDIRS:=\
 	$(foreach lpath,$(LIBRARY_PATHS),-L$(lpath))
@@ -188,7 +189,7 @@ AR:=ar
 ARFLAGS:= rcs
 
 
-.PHONY:	help real-help show real-show debug release clean-all deps
+.PHONY:	help real-help show real-show debug release clean-all deps Makefile.inc
 
 # ######################################################################
 # All the conditional targets
@@ -202,6 +203,35 @@ debug:	all
 release:	CFLAGS+= -O3
 release:	CXXFLAGS+= -O3
 release:	all
+
+# ######################################################################
+# Create the targets we need to include (some things are fiddly to do
+# within make, we break out to shell commands for them, untidy as it
+# looks).
+
+Makefile.inc:
+	@rm -rf $@
+	ALL_OBS=''; \
+	for X in $(SUBPROJS); do \
+		OBS=`find $$X | grep -E "\.(c|cpp)\\$$"`; \
+		DEPS=""; \
+		for Y in $${OBS}; do \
+			OBJ=`echo $$Y | sed "s+$$X+$(OUTOBS)/$$X+g"`; \
+			OBJ=`echo $${OBJ} | sed -E "s+\.(c|cpp)\\$$+.o+g"`; \
+			echo $${OBJ}: $$Y >> $@; \
+			DEPS="$${DEPS} $${OBJ}"; \
+			if [ `echo $${Y} | grep -c cpp ` -gt 0 ]; then \
+				echo '	$$(CXX) $$(CXXFLAGS) -c -o $$@ $$<' >> $@; \
+			else \
+				echo '	$$(CC) $$(CFLAGS) -c -o $$@ $$<' >> $@; \
+			fi \
+		done; \
+		OBS=`echo $${OBS} | sed -E "s+\.(c|cpp)+.o+g"`; \
+		echo $(OUTLIB)/lib$$X-$(VERSION)$(LIB_EXT): $${DEPS} >> $@; \
+		ALL_OBS="$${ALL_OBS} $${DEPS}"; \
+	done; \
+	echo $${ALL_OBS}
+
 
 # ######################################################################
 # Finally, build the system
@@ -292,25 +322,28 @@ $(DEPS): $(HEADERS)
 
 deps: $(DEPS)
 
-src/%.d: src/%.c
+%.d: %.c
 	@$(ECHO) "[$(RED)Dependency$(NONE)  ]    [$@]"
 	@$(CC) $(CFLAGS) -MM -MF $@ -MT $(OUTOBS)/$*.o $< ||\
 		($(ECHO) "$(INV)$(RED)[Depend failure ]   [$@]$(NONE)" ; exit 127)
 
-src/%.d: src/%.cpp
+%.d: %.cpp
 	@$(ECHO) "[$(RED)Dependency$(NONE)  ]    [$@]"
 	@$(CXX) $(CXXFLAGS) -MM -MF $@ $< ||\
 		($(ECHO) "$(INV)$(RED)[Depend failure ]   [$@]$(NONE)" ; exit 127)
 
-$(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c src/%.d
-	@$(ECHO) "[$(BLUE)Building$(NONE)    ]    [$@]"
-	@$(CC) $(CFLAGS) -o $@ $< ||\
-		($(ECHO) "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
+debug/skeleton-3.14.59/obs/x86_64-linux-gnu/proj-one/%.o: */%.c
+	 $(CC) $(CFLAGS) -o $@ $<
 
-$(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp src/%.d
-	@$(ECHO) "[$(BLUE)Building$(NONE)    ]    [$@]"
-	@$(CXX) $(CXXFLAGS) -o $@ $< ||\
-		($(ECHO) "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
+# $(BIN_COBS) $(COBS):	$(OUTOBS)/%.o:	src/%.c src/%.d
+#	 @$(ECHO) "[$(BLUE)Building$(NONE)    ]    [$@]"
+#	 @$(CC) $(CFLAGS) -o $@ $< ||\
+#		 ($(ECHO) "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
+
+#  $(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp src/%.d
+#  	@$(ECHO) "[$(BLUE)Building$(NONE)    ]    [$@]"
+#  	@$(CXX) $(CXXFLAGS) -o $@ $< ||\
+#  		($(ECHO) "$(INV)$(RED)[Compile failure]   [$@]$(NONE)" ; exit 127)
 
 $(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
@@ -351,3 +384,4 @@ clean:
 	@$(ECHO) Choose either clean-release or clean-debug
 
 # include $(DEPS)
+include Makefile.inc

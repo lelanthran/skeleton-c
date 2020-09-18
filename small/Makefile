@@ -5,7 +5,12 @@ ifndef PROJNAME
 $(error $$PROJNAME not defined. Is the 'build.config' file missing?)
 endif
 
+export DESCRIPTION
+
 VERSION?=0.0.0
+MAINTAINER?="No maintainer"
+HOMEPAGE?="No homepage"
+DESCRIPTION?="No description"
 
 # ######################################################################
 # Set some colours for $(ECHO) to use
@@ -88,6 +93,7 @@ OUTDIR=release
 endif
 
 TARGET:=$(shell $(GCC) -dumpmachine)
+T_ARCH=$(shell $(GCC) -dumpmachine | cut -f 1 -d - )
 OUTLIB:=$(OUTDIR)/lib/$(TARGET)
 OUTBIN:=$(OUTDIR)/bin/$(TARGET)
 OUTOBS:=$(OUTDIR)/obs/$(TARGET)
@@ -232,6 +238,12 @@ all:	real-all
 
 
 real-show:
+	@$(ECHO) "$(GREEN)PROJNAME$(NONE)     $(PROJNAME)"
+	@$(ECHO) "$(GREEN)VERSION$(NONE)      $(VERSION)"
+	@$(ECHO) "$(GREEN)MAINTAINER$(NONE)   $(MAINTAINER)"
+	@$(ECHO) "$(GREEN)HOMEPAGE$(NONE)     $(HOMEPAGE)"
+	@$(ECHO) "$(GREEN)DESCRIPTION$(NONE)  $$DESCRIPTION"
+	@$(ECHO) "$(GREEN)TARGET-ARCH$(NONE)  $(T_ARCH)"
 	@$(ECHO) "$(GREEN)HOME$(NONE)         $(HOME)"
 	@$(ECHO) "$(GREEN)SHELL$(NONE)        $(SHELL)"
 	@$(ECHO) "$(GREEN)EXE_EXT$(NONE)      $(EXE_EXT)"
@@ -342,5 +354,23 @@ clean-all:	clean-release clean-debug
 
 clean:
 	@$(ECHO) Choose either clean-release or clean-debug
+
+debug-deb:	debug
+	@rm -rfv debug-deb-config
+	@mkdir -p debug-deb-config
+	@mkdir -p debug-deb-config/DEBIAN
+	@mkdir -p debug-deb-config/usr/lib
+	@mkdir -p debug-deb-config/usr/bin
+	@echo "Package: $(PROJNAME)"         > debug-deb-config/DEBIAN/control
+	@echo "Version: $(VERSION)"         >> debug-deb-config/DEBIAN/control
+	@echo "Section: $(SECTION)"         >> debug-deb-config/DEBIAN/control
+	@echo "Priority: Optional"          >> debug-deb-config/DEBIAN/control
+	@echo "Architecture: $(T_ARCH)"     >> debug-deb-config/DEBIAN/control
+	@echo "Essential: no"               >> debug-deb-config/DEBIAN/control
+	@echo "Installed-size: $$I_SIZE"    >> debug-deb-config/DEBIAN/control
+	@echo "Maintainer: $(MAINTAINER)"   >> debug-deb-config/DEBIAN/control
+	@echo "Description: $$DESCRIPTION"  >> debug-deb-config/DEBIAN/control
+	@cp -Rv debug/lib/$(TARGET)/* debug-deb-config/usr/lib
+	@cp -Rv debug/bin/$(TARGET)/* debug-deb-config/usr/bin
 
 include $(DEPS)

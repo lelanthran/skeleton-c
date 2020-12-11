@@ -12,6 +12,8 @@ MAINTAINER?="No maintainer"
 HOMEPAGE?="No homepage"
 DESCRIPTION?="No description"
 
+export DESCRIPTION
+
 # ######################################################################
 # Set some colours for $(ECHO) to use
 NONE:=\e[0m
@@ -99,6 +101,14 @@ OUTBIN:=$(OUTDIR)/bin/$(TARGET)
 OUTOBS:=$(OUTDIR)/obs/$(TARGET)
 OUTDIRS:=$(OUTLIB) $(OUTBIN) $(OUTOBS) include
 
+# ######################################################################
+# The architecture has to be manually mapped to a compatible one for
+# debian. As I test more arches, I'll put them in here. By default we
+# will use whatever gcc gave us.
+PACKAGE_ARCH=$(T_ARCH)
+ifeq ($(T_ARCH),x86_64)
+	PACKAGE_ARCH=amd64
+endif
 
 # ######################################################################
 # Declare the final outputs
@@ -297,6 +307,29 @@ $(DEPS): $(HEADERS)
 
 deps: $(DEPS)
 
+debian-package:
+	@mkdir -p $(OUTDIR)/$(PROJNAME)/usr/lib
+	@mkdir -p $(OUTDIR)/$(PROJNAME)/usr/bin
+	@mkdir -p $(OUTDIR)/$(PROJNAME)/DEBIAN
+	@cp -v $(OUTLIB)/*.so $(OUTDIR)/$(PROJNAME)/usr/lib
+	@cp -v $(OUTLIB)/*.a $(OUTDIR)/$(PROJNAME)/usr/lib
+	@cp -v $(OUTBIN)/* $(OUTDIR)/$(PROJNAME)/usr/bin
+	@echo 'Package: $(PROJNAME)'           > $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Version: $(VERSION)'           >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Section: custom'               >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Priority: optional'            >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Architecture: $(PACKAGE_ARCH)' >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Essential: no'                 >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo "Installed-size: `du -bs $(OUTDIR) | cut -f 1 `" \
+	                                     >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Maintainer: $(MAINTAINER)'     >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo "Description: $$DESCRIPTION" | sed "s/^$$/ ./g; s/^/ /g; s/^ D/D/g" \
+	                                     >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@dpkg-deb --build $(OUTDIR)/$(PROJNAME) $(OUTDIR)/$(PROJNAME)-$(PACKAGE_ARCH)-$(VERSION).deb
+
+debug-package:	debug debian-package
+release-package:	release debian-package
+
 src/%.d: src/%.c
 	@$(ECHO) "[$(RED)Dependency$(NONE)  ]    [$@]"
 	@$(CC) $(CFLAGS) -MM -MF $@ -MT $(OUTOBS)/$*.o $< ||\
@@ -354,23 +387,5 @@ clean-all:	clean-release clean-debug
 
 clean:
 	@$(ECHO) Choose either clean-release or clean-debug
-
-debug-deb:	debug
-	@rm -rfv debug-deb-config
-	@mkdir -p debug-deb-config
-	@mkdir -p debug-deb-config/DEBIAN
-	@mkdir -p debug-deb-config/usr/lib
-	@mkdir -p debug-deb-config/usr/bin
-	@echo "Package: $(PROJNAME)"         > debug-deb-config/DEBIAN/control
-	@echo "Version: $(VERSION)"         >> debug-deb-config/DEBIAN/control
-	@echo "Section: $(SECTION)"         >> debug-deb-config/DEBIAN/control
-	@echo "Priority: Optional"          >> debug-deb-config/DEBIAN/control
-	@echo "Architecture: $(T_ARCH)"     >> debug-deb-config/DEBIAN/control
-	@echo "Essential: no"               >> debug-deb-config/DEBIAN/control
-	@echo "Installed-size: $$I_SIZE"    >> debug-deb-config/DEBIAN/control
-	@echo "Maintainer: $(MAINTAINER)"   >> debug-deb-config/DEBIAN/control
-	@echo "Description: $$DESCRIPTION"  >> debug-deb-config/DEBIAN/control
-	@cp -Rv debug/lib/$(TARGET)/* debug-deb-config/usr/lib
-	@cp -Rv debug/bin/$(TARGET)/* debug-deb-config/usr/bin
 
 include $(DEPS)

@@ -11,6 +11,8 @@ VERSION?=0.0.0
 MAINTAINER?="No maintainer"
 HOMEPAGE?="No homepage"
 DESCRIPTION?="No description"
+SECTION?="custom"
+DEPENDS=
 
 export DESCRIPTION
 
@@ -316,9 +318,11 @@ debian-package:
 	@cp -v $(OUTBIN)/* $(OUTDIR)/$(PROJNAME)/usr/bin
 	@echo 'Package: $(PROJNAME)'           > $(OUTDIR)/$(PROJNAME)/DEBIAN/control
 	@echo 'Version: $(VERSION)'           >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
-	@echo 'Section: custom'               >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Section: $(SECTION)'           >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Homepage: $(HOMEPAGE)'         >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
 	@echo 'Priority: optional'            >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
 	@echo 'Architecture: $(PACKAGE_ARCH)' >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
+	@echo 'Depends: $(DEPENDS)'           >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
 	@echo 'Essential: no'                 >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control
 	@echo "Installed-size: `du -bs $(OUTDIR) | cut -f 1 `" \
 	                                     >> $(OUTDIR)/$(PROJNAME)/DEBIAN/control

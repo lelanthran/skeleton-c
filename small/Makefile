@@ -40,9 +40,25 @@ MAKEPROGRAM_EXE=$(findstring exe,$(MAKE))
 MAKEPROGRAM_MINGW=$(findstring mingw,$(MAKE))
 GITSHELL=$(findstring Git,$(SHELL))
 GITSHELL+=$(findstring git,$(SHELL))
+MINGW_DETECTED=$(findstring mingw,$(GCC))
+BUILD_HOST=$(findstring Linux,$(shell uname -s))
+
 
 # TODO: Remember that freebsd might use not gmake/gnu-make; must add in
 # some diagnostics so that user gets a message to install gnu make.
+
+ifneq ($(MINGW_DETECTED),)
+ifeq ($(strip $(BUILD_HOST)),Linux)
+	HOME=$(subst \,/,$(HOMEDRIVE)$(HOMEPATH))
+	PLATFORM:=Windows
+	EXE_EXT:=.exe
+	LIB_EXT:=.dll
+	PLATFORM_LDFLAGS:=-L$(HOME)/lib -lmingw32 -lmsvcrt -lgcc -liphlpapi -lws2_32
+	PLATFORM_CFLAGS:= -D__USE_MINGW_ANSI_STDIO -DWINVER=0x0600 -D_WIN32_WINNT=0x0600
+	ECHO:=echo
+endif
+endif
+
 
 ifneq ($(MAKEPROGRAM_EXE),)
 ifeq ($(strip $(GITSHELL)),)

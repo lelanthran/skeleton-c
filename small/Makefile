@@ -92,7 +92,7 @@ ifeq ($(PLATFORM),)
 	PLATFORM:=POSIX
 	EXE_EXT:=.elf
 	LIB_EXT:=.so
-	PLATFORM_LDFLAGS:= -lpthread -ldl
+	PLATFORM_LDFLAGS:= -ldl
 	ECHO:=echo
 	REAL_SHOW:=real-show
 endif
@@ -181,6 +181,17 @@ ifndef LD_PROG
 endif
 ifndef LD_LIB
 	LD_LIB=gcc
+endif
+
+# ######################################################################
+# On android targets we must remove the -lpthread from the link flags
+#
+ifneq (,$(findstring android,$(LD_PROG)))
+REAL_EXTRA_LIB_LDFLAGS=$(subst -lpthread,,$(EXTRA_LIB_LDFLAGS))
+endif
+
+ifneq (,$(findstring android,$(LD_LIB)))
+REAL_EXTRA_PROG_LDFLAGS=$(subst -lpthread,,$(EXTRA_PROG_LDFLAGS))
 endif
 
 # ######################################################################
@@ -372,17 +383,17 @@ $(BIN_CPPOBS) $(CPPOBS):	$(OUTOBS)/%.o:	src/%.cpp src/%.d
 
 $(OUTBIN)/%.exe:	$(OUTOBS)/%.o $(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
-	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(EXTRA_PROG_LDFLAGS) ||\
+	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(REAL_EXTRA_PROG_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(OUTBIN)/%.elf:	$(OUTOBS)/%.o $(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
-	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(EXTRA_PROG_LDFLAGS) ||\
+	@$(LD_PROG) $< $(OBS) -o $@ $(LDFLAGS) $(REAL_EXTRA_PROG_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(DYNLIB):	$(OBS)
 	@$(ECHO) "[$(GREEN)Linking$(NONE)     ]    [$@]"
-	@$(LD_LIB) -shared $^ -o $@ $(LDFLAGS) $(EXTRA_LIB_LDFLAGS) ||\
+	@$(LD_LIB) -shared $^ -o $@ $(LDFLAGS) $(REAL_EXTRA_LIB_LDFLAGS) ||\
 		($(ECHO) "$(INV)$(RED)[Link failure]   [$@]$(NONE)" ; exit 127)
 
 $(STCLIB):	$(OBS)

@@ -54,10 +54,10 @@ function print_kv () {
 
 function print_help_message () {
    echo '
-android.sh     [--android-ndk-path=<path>]
-               [--target-machine=<machine>]
-               [--android-level=<number>]
-               <make targets>
+android-build.sh     [--android-ndk-path=<path>]
+                     [--target-machine=<machine>]
+                     [--android-level=<number>]
+                     <make targets>
 
    Build for a specified android target architecture. At least one make target
    must be specified. Multiple make targets separated by spaces can be specified.

@@ -110,6 +110,27 @@ android-build.sh     [--android-ndk-path=<path>]
    exit 0
 }
 
+export HOST_MACHINE="`uname -m`"
+export HOST_OS="`uname -o`"
+export TARGET_OS=linux
+export SYSROOT_CONF=/etc/android-build.conf
+
+# TODO: Double-check this on Windows.
+if [ "$HOST_OS" == "msys" ]; then
+   export SYSROOT_CONF=/c/Windows/android-build.conf
+fi
+
+function source_file () {
+   if [ -f "$1" ]; then
+      printf "Reading variables from ${FG_MAGENTA}$1${RESET}\n"
+      . "$1"
+   fi
+}
+
+source_file "$SYSROOT_CONF"
+source_file "$HOME/.android-build.conf"
+source_file "$PWD/.android-build.conf"
+
 function get_cline_value () {
    echo $1 | cut -f 2 -d =
 }
@@ -142,10 +163,7 @@ done
 [ -z "${TARGET_MACHINE}" ]   && die 'Value $TARGET_MACHINE not set. Try --help.'
 [ -z "${ANDROID_LEVEL}" ]    && die 'Value $ANDROID_LEVEL not set. Try --help.'
 
-export HOST_MACHINE="`uname -m`"
-export HOST_OS="`uname -o`"
-export TARGET_OS=linux
-
+# TODO: Add in the one for Windows here
 case "$HOST_OS" in
 
    GNU/Linux)     export HOST_OS=linux

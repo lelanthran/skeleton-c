@@ -52,36 +52,61 @@ function print_kv () {
 # environment variables of the same name.
 #
 
+function highlight () {
+   echo -ne "${BG_GREY90}${FG_GREEN}${1}${RESET}"
+}
+
 function print_help_message () {
-   echo '
+   export HELP_MSG="
 android-build.sh     [--android-ndk-path=<path>]
                      [--target-machine=<machine>]
                      [--android-level=<number>]
                      <make targets>
 
-   Build for a specified android target architecture. At least one make target
-   must be specified. Multiple make targets separated by spaces can be specified.
+      Build for a specified android target architecture. At least one make
+   target must be specified. Multiple make targets separated by spaces can
+   be specified.
 
-      All of the above options can also be specified via environment variables.
-   The specifying environment variable is documented next to the option name
-   below.
+      Options are set from files, the environment and the command-line.  Any
+   option set later overrides in options that were already set. Options are
+   set in the following order:
+
+         1. From the system android-build.conf file ("`highlight /etc/android-build.conf`"
+            or "`highlight /c/Windows/android-build.conf`" on Windows).
+
+         2. From the file "`highlight .android-build.conf`" file in the users home directory
+            (even on Windows): "`highlight \\$HOME/.android-build.conf`"
+
+         3. From the file '.android-build.conf' in the current directory:
+            "`highlight \\$PWD/.android-build.conf`"
+
+         4. From the environment variables (the description of each option below
+            specifies which variable is used for each option).
+
+         5. From the command-line, as described below.
+
+      Command-line options override the environment variables, which override
+   options set in the "`highlight \\$PWD/.android-build.conf`", which overrides
+   "`highlight \\$HOME/.android-build.conf`" which overrides "`highlight \\$SYSROOT/android-build.conf`".
 
    --android-ndk-path=<path>
-      Specify a path. A path must be specified. If no path is specified the
-   environment variable ANDROID_NDK_PATH is used.
+         Specify a path. A path must be specified. If no path is specified the
+      environment variable "`highlight ANDROID_NDK_PATH`" is used.
 
    --target-machine=<machine>
-         Specify the machine to build for. The name 'all' will build for all
-      machines found in the Android NDK. At least one machine or the word "all"
+         Specify the machine to build for. The name "`highlight all`" will build for all
+      machines found in the Android NDK. At least one machine or the word 'all'
       must be specified. Multiple target machines may be specified using spaces
       to separate the machine names. If a target machine is not specified the
-      environment variable TARGET_MACHINE is used.
+      environment variable "`highlight TARGET_MACHINE`" is used.
 
    --android-level=<number>
-      Specify the android level to build for. Only a single android level can be
-   specified. If a level is not specified the environment variable ANDROID_LEVEL
-   is used.
-   '
+         Specify the android level to build for. Multiple android levels can be
+      specified, seperated with a space. If a level is not specified the
+      environment variable "`highlight ANDROID_LEVEL`" is used.
+   "
+   printf "$HELP_MSG\n"
+
    exit 0
 }
 
@@ -131,6 +156,14 @@ case "$HOST_OS" in
       ;;
 esac
 
+export HOST_BUILD_TOOLS="$ANDROID_NDK_PATH/toolchains/llvm/prebuilt/$HOST_OS-$HOST_MACHINE"
+
+if [ "$TARGET_MACHINE" == "all" ]; then
+   export INSTALLED_ARCHES="`ls -1 $HOST_BUILD_TOOLS/bin/*-android*-clang* | sed \"s:$HOST_BUILD_TOOLS/bin/::g\" | cut -f 1 -d - | sort -u`"
+   echo "Found the following arches: $INSTALLED_ARCHS"
+   export TARGET_MACHINE=$INSTALLED_ARCHES
+fi
+
 for X in $TARGET_MACHINE; do
    export TARGET_EABI=android
    if [ `echo $X | grep -c arm` -gt 0 ]; then
@@ -139,7 +172,6 @@ for X in $TARGET_MACHINE; do
    fi
 
    for Y in $ANDROID_LEVEL; do
-      export HOST_BUILD_TOOLS="$ANDROID_NDK_PATH/toolchains/llvm/prebuilt/$HOST_OS-$HOST_MACHINE"
       export ANDROID_GCC="$HOST_BUILD_TOOLS/bin/${X}-${TARGET_OS}-${TARGET_EABI}${Y}-clang"
       export ANDROID_GXX="$HOST_BUILD_TOOLS/bin/${X}-${TARGET_OS}-${TARGET_EABI}${Y}-clang++"
 

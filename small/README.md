@@ -12,7 +12,10 @@ Included you will find the following:
 5. Two example module source files and two header source files.
 
 The module and headers are present only as an example. You must replace
-them (or remove them) with your own modules.
+them (or remove them) with your own modules. You must also edit the
+build.config file to remove the example JNI wrappers that get generated.
+If you want to keep the JNI you will need to install the JDK and set the
+include path in build.config to point to the JDKs include directory.
 
 ## Output files
 You should do a build immediately after cloning this repo, just to make
@@ -41,7 +44,7 @@ There are two example modules: `module_one` and `module_two`. See the
 
 ## Input files and input variables
 The input files are your source files (both `C` and `C++`) and your
-headers files. All the source files **MUST** be in the `src/` directory
+header files. All the source files **MUST** be in the `src/` directory
 within your project. `C` source files **MUST HAVE** the extension `c`.
 `C++` source files **MUST HAVE** the extension `.cpp`. Note that the case
 is significant - all your file extensions must be in lowercase.

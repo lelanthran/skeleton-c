@@ -191,10 +191,14 @@ endif
 #
 ifneq (,$(findstring android,$(LD_PROG)))
 REAL_EXTRA_LIB_LDFLAGS=$(subst -lpthread,,$(EXTRA_LIB_LDFLAGS))
+else
+REAL_EXTRA_LIB_LDFLAGS=$(EXTRA_LIB_LDFLAGS)
 endif
 
 ifneq (,$(findstring android,$(LD_LIB)))
 REAL_EXTRA_PROG_LDFLAGS=$(subst -lpthread,,$(EXTRA_PROG_LDFLAGS))
+else
+REAL_EXTRA_PROG_LDFLAGS=$(EXTRA_PROG_LDFLAGS)
 endif
 
 # ######################################################################
@@ -367,7 +371,7 @@ debian-package:
 debug-package:	debug debian-package
 release-package:	release debian-package
 
-swig_prep:
+swig_prep: swig-input.swig
 	@$(ECHO) "[$(CYAN)SWIG$(NONE)        ]    [ <- ./src/"'*.h]'
 	@mkdir -p wrappers
 

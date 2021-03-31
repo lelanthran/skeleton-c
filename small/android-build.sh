@@ -206,7 +206,7 @@ for X in $TARGET_MACHINE; do
       export GCC=$ANDROID_GCC
       export GXX=$ANDROID_GXX
       export LD_PROG=$ANDROID_GCC
-      export LD_LIB=$ANDROID_GXX
+      export LD_LIB=$ANDROID_GCC
 
       for Z in $MAKE_TARGETS; do
          make $Z -j 4

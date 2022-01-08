@@ -220,6 +220,8 @@ PROG_LD=$(GCC_LD_PROG)
 LIB_LD=$(GCC_LD_LIB)
 
 INCLUDE_DIRS:= -I.\
+	-I./src\
+	-I$(INSTALL_PREFIX)/include/$(TARGET)\
 	$(foreach ipath,$(INCLUDE_PATHS),-I$(ipath))
 
 LIBDIRS:=\

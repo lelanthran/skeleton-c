@@ -408,7 +408,7 @@ swig_prep: swig-input.swig
 
 $(SWIG_WRAPPERS):	swig_prep
 	@mkdir -p wrappers/`echo $@ | cut -f 2 -d -`/swig_$(PROJNAME)
-	swig -package swig_$(PROJNAME) \
+	@swig -package swig_$(PROJNAME) \
 		-o src/swig_$(PROJNAME).c \
 		-`echo $@ | cut -f 2 -d -`\
 		-outdir wrappers/`echo $@ | cut -f 2 -d -`/swig_$(PROJNAME)\

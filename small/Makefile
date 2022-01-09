@@ -305,9 +305,9 @@ all:	$(SWIG_WRAPPERS) real-all
 	@mkdir -p $(INSTALL_PREFIX)/include/$(TARGET)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ $(OUTBIN) -> $(INSTALL_PREFIX)/bin/$(TARGET)]"
 	@cp $(OUTBIN)/* $(INSTALL_PREFIX)/bin/$(TARGET)
-	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ $(OUTLIB)-> $(INSTALL_PREFIX)/obs/$(TARGET)]"
+	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ $(OUTLIB)-> $(INSTALL_PREFIX)/lib/$(TARGET)]"
 	@cp $(OUTLIB)/* $(INSTALL_PREFIX)/lib/$(TARGET)
-	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ $(OUTOBS) -> $(INSTALL_PREFIX)/lib/$(TARGET)]"
+	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ $(OUTOBS) -> $(INSTALL_PREFIX)/obs/$(TARGET)]"
 	@cp $(OUTOBS)/* $(INSTALL_PREFIX)/obs/$(TARGET)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ include -> $(INSTALL_PREFIX)/include/$(TARGET)/]"
 	@cp -R include/* $(INSTALL_PREFIX)/include/$(TARGET)

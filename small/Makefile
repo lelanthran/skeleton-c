@@ -47,6 +47,7 @@ BUILD_HOST=$(findstring Linux,$(shell uname -s))
 # TODO: Remember that freebsd might use not gmake/gnu-make; must add in
 # some diagnostics so that user gets a message to install gnu make.
 
+PLATFORM_DEBUG_VALUE=1
 ifneq ($(MINGW_DETECTED),)
 ifeq ($(strip $(BUILD_HOST)),Linux)
 	HOME=$(subst \,/,$(HOMEDRIVE)$(HOMEPATH))
@@ -56,6 +57,7 @@ ifeq ($(strip $(BUILD_HOST)),Linux)
 	PLATFORM_LDFLAGS:=-L$(HOME)/lib -lmingw32 -lmsvcrt -lgcc -liphlpapi -lws2_32
 	PLATFORM_CFLAGS:= -D__USE_MINGW_ANSI_STDIO -DWINVER=0x0600 -D_WIN32_WINNT=0x0600
 	ECHO:=echo
+	PLATFORM_DEBUG_VALUE=2
 endif
 endif
 
@@ -71,6 +73,7 @@ endif
 	PLATFORM_LDFLAGS:=-L$(HOME)/lib -lws2_32 -lmsvcrt -lgcc -liphlpapi
 	PLATFORM_CFLAGS:= -D__USE_MINGW_ANSI_STDIO
 	ECHO:=echo -e
+	PLATFORM_DEBUG_VALUE=3
 endif
 
 ifneq ($(MAKEPROGRAM_MINGW),)
@@ -84,6 +87,7 @@ endif
 	PLATFORM_LDFLAGS:=-L$(HOME)/lib -lmingw32 -lws2_32 -lmsvcrt -lgcc
 	PLATFORM_CFLAGS:= -D__USE_MINGW_ANSI_STDIO
 	ECHO:=echo -e
+	PLATFORM_DEBUG_VALUE=4
 endif
 
 # If neither of the above are true then we assume a working POSIX
@@ -95,6 +99,7 @@ ifeq ($(PLATFORM),)
 	PLATFORM_LDFLAGS:= -ldl
 	ECHO:=echo
 	REAL_SHOW:=real-show
+	PLATFORM_DEBUG_VALUE=5
 endif
 
 
@@ -374,6 +379,7 @@ real-show:
 	@$(ECHO) "$(GREEN)SOURCES$(NONE)     "
 	@for X in $(SOURCES); do $(ECHO) "                 $$X"; done
 	@$(ECHO) "$(GREEN)PWD$(NONE)          $(PWD)"
+	@$(ECHO) "$(GREEN)PLATFORM_DEBUG_VALUE$(NONE) : $(PLATFORM_DEBUG_VALUE)"
 
 show:	real-show
 	@$(ECHO) "Only target 'show' selected, ending now."

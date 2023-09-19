@@ -298,8 +298,10 @@ real-help:
 
 
 real-all:	$(OUTDIRS) $(DYNLIB) $(STCLIB) $(BINPROGS)
+	@unlink ./recent/default-platform || rm -rf ./recent/default-platform
 	@unlink ./recent || rm -rf ./recent
 	@ln -s $(OUTDIR) ./recent
+	@ln -s ./$(TARGET) $(OUTDIR)/default-platform
 
 all:	$(SWIG_WRAPPERS) real-all
 	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(STCLNK_TARGET)]"

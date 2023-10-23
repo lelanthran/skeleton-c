@@ -4,6 +4,8 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include "build_info_skeleton.h"
+
 #include "module_one.h"
 #include "module_two.h"
 
@@ -254,6 +256,20 @@ int main (int argc, char **argv)
    printf ("Module one version:     [%s]\n", MODULE_ONE_VERSION);
    printf ("Module two version:     [%s]\n", MODULE_TWO_VERSION);
    printf ("Built [YYYYMMDDHHmmSS]: [%s]\n", BUILD_TIMESTAMP);
+
+#define PRINTF(x)  \
+   printf ("%34s: [%s]\n", #x, x ())
+   PRINTF  (build_info_skeleton_name);
+   PRINTF  (build_info_skeleton_version);
+   PRINTF  (build_info_skeleton_githash);
+   PRINTF  (build_info_skeleton_gitbranch);
+   PRINTF  (build_info_skeleton_target);
+   PRINTF  (build_info_skeleton_targetplatform);
+   PRINTF  (build_info_skeleton_hostname);
+   PRINTF  (build_info_skeleton_ccversion);
+   PRINTF  (build_info_skeleton_build);
+   PRINTF  (build_info_skeleton_timestamp);
+   PRINTF  (build_info_skeleton_homepage);
 
    /* Make sure we call the exit handler if anything happens and we are
     * not able to return cleanly.

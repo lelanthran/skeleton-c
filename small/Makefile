@@ -8,10 +8,10 @@ endif
 export DESCRIPTION
 
 VERSION?=0.0.0
-MAINTAINER?="No maintainer"
-HOMEPAGE?="No homepage"
-DESCRIPTION?="No description"
-SECTION?="custom"
+MAINTAINER?=No maintainer
+HOMEPAGE?=No homepage
+DESCRIPTION?=No description
+SECTION?=custom
 DEPENDS=
 
 export DESCRIPTION

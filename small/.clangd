@@ -1,0 +1,19 @@
+CompileFlags:
+  Add:
+    - -I.
+    - -I./include
+    - -I/home/lelanthran/opensource/github/include/x86_64-linux-gnu
+    - -I/home/lelanthran/src/BlindVault/Keyserver/github/include/
+    - -I/home/lelanthran/src/BlindVault/contrib/include/
+    - -Dbvks_version='"0.0.1"'
+    - -DBUILD_TIMESTAMP='"201909162104"'
+    - -DPLATFORM_POSIX=1
+    - -W -Wall -Wextra -Werror
+    - -Wunused-variable
+    - -Werror=unused-parameter
+    - -Wdouble-promotion
+    - -Wconversion
+    - -Wsign-conversion
+    - -std=c17
+    - -x
+    - c

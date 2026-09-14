@@ -188,6 +188,11 @@ ALL_OBS=$(OBS) $(BINOBS)
 DEPS:=\
 	$(subst $(OUTOBS),src,$(subst .o,.d,$(ALL_OBS)))
 
+# Source names in build.config may contain directories. Preserve those
+# directories in the object, binary and installed-header trees.
+INCLUDE_FILES:=$(patsubst src/%,include/%,$(HEADERS) $(BUILD_INFO_HFILE))
+OUTDIRS := $(sort $(OUTDIRS) $(patsubst %/,%,$(sort $(dir $(ALL_OBS) $(BINPROGS) $(INCLUDE_FILES)))))
+
 
 # ######################################################################
 # Find all the source files so that we can do dependencies properly
@@ -415,17 +420,20 @@ all:	$(SWIG_WRAPPERS) real-all
 	@$(ECHO) "[$(CYAN)Soft linking$(NONE)]    [$(DYNLNK_TARGET)]"
 	@ln -f -s $(DYNLNK_TARGET) $(DYNLNK_NAME)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ -> ./include/]"
-	@cp -R $(HEADERS) $(BUILD_INFO_HFILE) include
+	@for H in $(HEADERS) $(BUILD_INFO_HFILE); do \
+		D=include/$${H#src/}; \
+		cp "$$H" "$$D" || exit 127; \
+	done
 	@mkdir -p $(INSTALL_PREFIX)/bin/$(TARGET)
 	@mkdir -p $(INSTALL_PREFIX)/lib/$(TARGET)
 	@mkdir -p $(INSTALL_PREFIX)/obs/$(TARGET)
 	@mkdir -p $(INSTALL_PREFIX)/include/$(TARGET)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ $(OUTBIN) -> $(INSTALL_PREFIX)/bin/$(TARGET)]"
-	@cp $(OUTBIN)/* $(INSTALL_PREFIX)/bin/$(TARGET)
+	@cp -R $(OUTBIN)/* $(INSTALL_PREFIX)/bin/$(TARGET)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ $(OUTLIB)-> $(INSTALL_PREFIX)/lib/$(TARGET)]"
 	@cp $(OUTLIB)/* $(INSTALL_PREFIX)/lib/$(TARGET)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ $(OUTOBS) -> $(INSTALL_PREFIX)/obs/$(TARGET)]"
-	@cp $(OUTOBS)/* $(INSTALL_PREFIX)/obs/$(TARGET)
+	@cp -R $(OUTOBS)/* $(INSTALL_PREFIX)/obs/$(TARGET)
 	@$(ECHO) "[$(CYAN)Copying$(NONE)     ]    [ include -> $(INSTALL_PREFIX)/include/$(TARGET)/]"
 	@cp -R include/* $(INSTALL_PREFIX)/include/$(TARGET)
 	@$(ECHO) "$(INV)$(YELLOW)Build completed: `date`$(NONE)"
